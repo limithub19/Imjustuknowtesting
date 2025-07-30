@@ -1,39 +1,26 @@
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
 
--- Search the entire Workspace for ANY pet model
-local function findAnyPet()
-	for _, obj in ipairs(workspace:GetDescendants()) do
-		if obj:IsA("Model") and obj.Name:lower():find("pet") then
-			return obj
+-- Search workspace for models that look like pets near you
+for _, model in ipairs(workspace:GetDescendants()) do
+	if model:IsA("Model") and model.Name:lower():find("pet") then
+		-- Check distance to player
+		local primary = model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart")
+		if primary and (primary.Position - HumanoidRootPart.Position).Magnitude < 30 then
+			local clone = model:Clone()
+			clone.Parent = workspace
+			clone:PivotTo(HumanoidRootPart.CFrame * CFrame.new(2, 1.5, 0))
+			
+			-- Make it not float away
+			for _, part in ipairs(clone:GetDescendants()) do
+				if part:IsA("BasePart") then
+					part.Anchored = true
+					part.CanCollide = false
+				end
+			end
+			break
 		end
 	end
-	return nil
-end
-
--- Clone pet and place beside the player
-local function clonePet(petModel)
-	local cloned = petModel:Clone()
-	cloned.Parent = workspace
-
-	local root = Character:FindFirstChild("HumanoidRootPart")
-	if root then
-		cloned:PivotTo(root.CFrame * CFrame.new(2, 1.5, 0))
-	end
-
-	for _, part in cloned:GetDescendants() do
-		if part:IsA("BasePart") then
-			part.Anchored = true
-			part.CanCollide = false
-		end
-	end
-end
-
--- Main run
-local pet = findAnyPet()
-if pet then
-	clonePet(pet)
-else
-	warn("❌ No pet found in workspace.")
 end
