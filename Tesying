@@ -2,55 +2,38 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 
--- 🔧 CHANGE THIS to the real username of the player you want to steal pet from:
-local targetUsername = "PutUsernameHere"
-
--- Find the plot owned by that username
-local function findPlotByUsername(username)
-	local plotsFolder = workspace:FindFirstChild("Plots")
-	if not plotsFolder then
-		warn("❌ No Plots folder found.")
-		return nil
-	end
-
-	for _, plot in ipairs(plotsFolder:GetChildren()) do
-		local owner = plot:FindFirstChild("Owner") or plot:FindFirstChild("owner")
-		if owner and owner:IsA("StringValue") and owner.Value == username then
-			return plot
-		end
-	end
-	return nil
+local plotsFolder = workspace:FindFirstChild("Plots")
+if not plotsFolder then
+	warn("❌ No 'Plots' folder found in Workspace.")
+	return
 end
 
--- Clone first found pet from that plot
-local function stealPetFromPlot(plot)
-	for _, pet in ipairs(plot:GetDescendants()) do
-		if pet:IsA("Model") and pet.Name:lower():find("pet") then
-			local cloned = pet:Clone()
-			cloned.Parent = workspace
-			local root = Character:FindFirstChild("HumanoidRootPart")
-			if root then
-				cloned:PivotTo(root.CFrame * CFrame.new(2, 1.5, 0))
-			end
-			for _, part in cloned:GetDescendants() do
-				if part:IsA("BasePart") then
-					part.Anchored = true
-					part.CanCollide = false
+local function cloneFirstPet()
+	for _, plot in ipairs(plotsFolder:GetChildren()) do
+		for _, obj in ipairs(plot:GetDescendants()) do
+			if obj:IsA("Model") and obj.Name:lower():find("pet") then
+				local cloned = obj:Clone()
+				cloned.Parent = workspace
+
+				local root = Character:FindFirstChild("HumanoidRootPart")
+				if root then
+					cloned:PivotTo(root.CFrame * CFrame.new(2, 1.5, 0)) -- place beside player
 				end
+
+				for _, part in cloned:GetDescendants() do
+					if part:IsA("BasePart") then
+						part.Anchored = true
+						part.CanCollide = false
+					end
+				end
+
+				print("✅ Pet cloned successfully from a plot!")
+				return true
 			end
-			return true
 		end
 	end
+	warn("❌ No pet found in any plots.")
 	return false
 end
 
--- Main
-local plot = findPlotByUsername(targetUsername)
-if not plot then
-	warn("❌ Could not find plot owned by: " .. targetUsername)
-else
-	local success = stealPetFromPlot(plot)
-	if not success then
-		warn("❌ No pets found in plot!")
-	end
-end
+cloneFirstPet()
