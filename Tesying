@@ -1,113 +1,154 @@
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
+local player = game.Players.LocalPlayer
+local players = game:GetService("Players")
 
--- Load the spawner library
-local Spawner = loadstring(game:HttpGet("https://codeberg.org/GrowAFilipino/GrowAGarden/raw/branch/main/Spawner.lua"))()
-local allPets = Spawner.GetPets()
-
--- GUI
+-- UI Setup
 local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
-gui.Name = "BloxPetUI"
+gui.Name = "GrowAGardenFakePets"
+gui.ResetOnSpawn = false
 
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 260, 0, 350)
-frame.Position = UDim2.new(0.05, 0, 0.2, 0)
-frame.BackgroundColor3 = Color3.fromRGB(30, 0, 60)
+frame.Size = UDim2.new(0, 250, 0, 300)
+frame.Position = UDim2.new(0.5, -125, 0.5, -150)
+frame.BackgroundColor3 = Color3.fromRGB(40, 0, 60)
 frame.BorderSizePixel = 0
+frame.Active = true
+frame.Draggable = true
+
+local uilist = Instance.new("UIListLayout", frame)
+uilist.SortOrder = Enum.SortOrder.LayoutOrder
+uilist.Padding = UDim.new(0, 4)
 
 local title = Instance.new("TextLabel", frame)
-title.Size = UDim2.new(1, 0, 0, 40)
-title.Text = "BLOXIFIED"
+title.Text = "🌱 Server Players"
+title.Size = UDim2.new(1, 0, 0, 30)
+title.BackgroundColor3 = Color3.fromRGB(60, 0, 90)
+title.TextColor3 = Color3.new(1,1,1)
 title.Font = Enum.Font.GothamBold
-title.TextSize = 24
-title.TextColor3 = Color3.fromRGB(200,150,255)
-title.BackgroundTransparency = 1
+title.TextScaled = true
 
--- Players button
-local playersBtn = Instance.new("TextButton", frame)
-playersBtn.Position = UDim2.new(0.1, 0, 0, 50)
-playersBtn.Size = UDim2.new(0.8, 0, 0, 35)
-playersBtn.Text = "Players"
-playersBtn.Font = Enum.Font.Gotham
-playersBtn.TextSize = 18
-playersBtn.TextColor3 = Color3.new(1,1,1)
-playersBtn.BackgroundColor3 = Color3.fromRGB(80,30,140)
-playersBtn.BorderSizePixel = 0
+local playerList = Instance.new("ScrollingFrame", frame)
+playerList.Size = UDim2.new(1, 0, 0.4, 0)
+playerList.CanvasSize = UDim2.new(0, 0, 0, 0)
+playerList.BackgroundColor3 = Color3.fromRGB(30, 0, 40)
+playerList.BorderSizePixel = 0
+playerList.AutomaticCanvasSize = Enum.AutomaticSize.Y
+playerList.ScrollBarThickness = 4
 
--- Pets button
-local petsBtn = Instance.new("TextButton", frame)
-petsBtn.Position = UDim2.new(0.1, 0, 0, 95)
-petsBtn.Size = UDim2.new(0.8, 0, 0, 35)
-petsBtn.Text = "Pets"
-petsBtn.Font = Enum.Font.Gotham
-petsBtn.TextSize = 18
-petsBtn.TextColor3 = Color3.new(1,1,1)
-petsBtn.BackgroundColor3 = Color3.fromRGB(80,30,140)
-petsBtn.BorderSizePixel = 0
+local playerListLayout = Instance.new("UIListLayout", playerList)
+playerListLayout.Padding = UDim.new(0, 2)
 
--- Container
-local listFrame = Instance.new("ScrollingFrame", frame)
-listFrame.Position = UDim2.new(0.05, 0, 0, 140)
-listFrame.Size = UDim2.new(0.9, 0, 0, 180)
-listFrame.BackgroundColor3 = Color3.fromRGB(60,20,120)
-listFrame.BorderSizePixel = 0
-listFrame.ScrollBarThickness = 6
-
-local layout = Instance.new("UIListLayout", listFrame)
-
--- State
 local selectedPlayer = nil
-local mode = "players"  -- or "pets"
 
--- Populate functions
-local function showPlayers()
-	mode = "players"
-	listFrame:ClearAllChildren()
-	for i,p in ipairs(Players:GetPlayers()) do
-		local btn = Instance.new("TextButton", listFrame)
-		btn.Size = UDim2.new(1,0,0,32)
-		btn.Position = UDim2.new(0,0,0,(i-1)*36)
-		btn.Text = p.Name
-		btn.BackgroundColor3 = Color3.fromRGB(100,40,180)
-		btn.TextColor3 = Color3.new(1,1,1)
-		btn.Font = Enum.Font.Gotham
-		btn.TextSize = 16
-		btn.MouseButton1Click:Connect(function()
-			selectedPlayer = p
-			showPets()
-		end)
-	end
-	listFrame.CanvasSize = UDim2.new(0,0,0,#Players:GetPlayers()*36)
+local function spawnPet(petName)
+	if not selectedPlayer then return end
+	local fakePet = Instance.new("Model", workspace)
+	fakePet.Name = petName .. " (Fake)"
+
+	local head = Instance.new("Part", fakePet)
+	head.Size = Vector3.new(2, 2, 2)
+	head.Position = selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("HumanoidRootPart") and selectedPlayer.Character.HumanoidRootPart.Position + Vector3.new(math.random(2,4), 0, 0) or Vector3.new(0,5,0)
+	head.Anchored = true
+	head.BrickColor = BrickColor.Random()
+	head.Material = Enum.Material.SmoothPlastic
+
+	local decal = Instance.new("Decal", head)
+	decal.Face = Enum.NormalId.Front
+
+	-- Simple face per pet
+	local petFaces = {
+		Kitsune = "rbxassetid://707795627",
+		["Corrupted Kitsune"] = "rbxassetid://707795627",
+		Raccoon = "rbxassetid://707794659",
+		Mimic = "rbxassetid://707794833",
+		Octopus = "rbxassetid://707795230",
+		["Moon Cat"] = "rbxassetid://707794994",
+		["Plant Golem"] = "rbxassetid://707794729",
+		Ghost = "rbxassetid://707794376",
+		Bunny = "rbxassetid://707795009"
+	}
+	decal.Texture = petFaces[petName] or "rbxassetid://707795627"
 end
 
-local function showPets()
-	mode = "pets"
-	listFrame:ClearAllChildren()
-	for i, petName in ipairs(allPets) do
-		local btn = Instance.new("TextButton", listFrame)
-		btn.Size = UDim2.new(1,0,0,32)
-		btn.Position = UDim2.new(0,0,0,(i-1)*36)
-		btn.Text = petName
-		btn.BackgroundColor3 = Color3.fromRGB(100,40,180)
-		btn.TextColor3 = Color3.new(1,1,1)
-		btn.Font = Enum.Font.Gothan
-		btn.TextScaled = false
-		btn.TextSize = 16
-		btn.MouseButton1Click:Connect(function()
-			if selectedPlayer then
-				Spawner.SpawnPet(petName,1,1) -- default weight 1, age 1
-			end
-		end)
-	end
-	listFrame.CanvasSize = UDim2.new(0,0,0,#allPets*36)
+-- Pet list
+local pets = {"Kitsune", "Corrupted Kitsune", "Raccoon", "Mimic", "Octopus", "Moon Cat", "Plant Golem", "Ghost", "Bunny"}
+
+-- UI for pet buttons
+local petLabel = Instance.new("TextLabel", frame)
+petLabel.Text = "🐾 Pet Spawner"
+petLabel.Size = UDim2.new(1, 0, 0, 25)
+petLabel.BackgroundColor3 = Color3.fromRGB(60, 0, 90)
+petLabel.TextColor3 = Color3.new(1,1,1)
+petLabel.Font = Enum.Font.GothamBold
+petLabel.TextScaled = true
+
+local petList = Instance.new("ScrollingFrame", frame)
+petList.Size = UDim2.new(1, 0, 0.4, 0)
+petList.CanvasSize = UDim2.new(0, 0, 0, 0)
+petList.BackgroundColor3 = Color3.fromRGB(20, 0, 30)
+petList.BorderSizePixel = 0
+petList.AutomaticCanvasSize = Enum.AutomaticSize.Y
+petList.ScrollBarThickness = 4
+
+local petLayout = Instance.new("UIListLayout", petList)
+petLayout.Padding = UDim.new(0, 2)
+
+-- Create pet buttons
+for _, petName in ipairs(pets) do
+	local petBtn = Instance.new("TextButton", petList)
+	petBtn.Size = UDim2.new(1, 0, 0, 28)
+	petBtn.Text = petName
+	petBtn.BackgroundColor3 = Color3.fromRGB(80, 0, 110)
+	petBtn.TextColor3 = Color3.new(1, 1, 1)
+	petBtn.Font = Enum.Font.Gotham
+	petBtn.TextScaled = true
+
+	petBtn.MouseButton1Click:Connect(function()
+		spawnPet(petName)
+	end)
 end
 
-playersBtn.MouseButton1Click:Connect(showPlayers)
-petsBtn.MouseButton1Click:Connect(function()
-	if selectedPlayer then
-		showPets()
-	end
+-- Create player buttons
+for _, p in ipairs(players:GetPlayers()) do
+	local btn = Instance.new("TextButton", playerList)
+	btn.Size = UDim2.new(1, 0, 0, 28)
+	btn.Text = p.DisplayName
+	btn.BackgroundColor3 = Color3.fromRGB(80, 0, 120)
+	btn.TextColor3 = Color3.new(1, 1, 1)
+	btn.Font = Enum.Font.Gotham
+	btn.TextScaled = true
+
+	btn.MouseButton1Click:Connect(function()
+		selectedPlayer = p
+	end)
+end
+
+-- Refresh player list on join
+players.PlayerAdded:Connect(function(p)
+	local btn = Instance.new("TextButton", playerList)
+	btn.Size = UDim2.new(1, 0, 0, 28)
+	btn.Text = p.DisplayName
+	btn.BackgroundColor3 = Color3.fromRGB(80, 0, 120)
+	btn.TextColor3 = Color3.new(1, 1, 1)
+	btn.Font = Enum.Font.Gotham
+	btn.TextScaled = true
+
+	btn.MouseButton1Click:Connect(function()
+		selectedPlayer = p
+	end)
 end)
 
--- Startup
-showPlayers()
+-- Toggle Button
+local toggleBtn = Instance.new("TextButton", gui)
+toggleBtn.Size = UDim2.new(0, 60, 0, 30)
+toggleBtn.Position = UDim2.new(0, 10, 0, 10)
+toggleBtn.Text = "🟪"
+toggleBtn.BackgroundColor3 = Color3.fromRGB(80, 0, 120)
+toggleBtn.TextColor3 = Color3.new(1, 1, 1)
+toggleBtn.Font = Enum.Font.GothamBold
+toggleBtn.TextScaled = true
+
+local visible = true
+toggleBtn.MouseButton1Click:Connect(function()
+	visible = not visible
+	frame.Visible = visible
+end)
