@@ -1,21 +1,42 @@
 local player = game.Players.LocalPlayer
+local char = player.Character or player.CharacterAdded:Wait()
+
+-- Try to find pet storage in ReplicatedStorage
+local possiblePaths = {
+	game.ReplicatedStorage:FindFirstChild("Pets"),
+	game.ReplicatedStorage:FindFirstChild("Entities"),
+	game.ReplicatedStorage:FindFirstChild("PetModels"),
+}
+
+local petFolder = nil
+for _, path in ipairs(possiblePaths) do
+	if path and #path:GetChildren() > 0 then
+		petFolder = path
+		break
+	end
+end
+
+if not petFolder then
+	warn("❌ No pet folder found in ReplicatedStorage.")
+	return
+end
 
 -- GUI
 local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
-gui.Name = "PetStealBrowser"
+gui.Name = "RealPetSpawner"
 gui.ResetOnSpawn = false
 
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 350, 0, 300)
-frame.Position = UDim2.new(0.5, -175, 0.5, -150)
-frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+frame.Size = UDim2.new(0, 320, 0, 300)
+frame.Position = UDim2.new(0.5, -160, 0.5, -150)
+frame.BackgroundColor3 = Color3.fromRGB(32, 32, 32)
 frame.Active = true
 frame.Draggable = true
 
 local title = Instance.new("TextLabel", frame)
 title.Size = UDim2.new(1, 0, 0, 30)
 title.BackgroundTransparency = 1
-title.Text = "Pet Browser 🐾"
+title.Text = "📦 All Pets (Real Models)"
 title.TextColor3 = Color3.new(1, 1, 1)
 title.Font = Enum.Font.GothamBold
 title.TextScaled = true
@@ -28,26 +49,29 @@ scrolling.ScrollBarThickness = 6
 scrolling.BackgroundTransparency = 0.1
 scrolling.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 
--- Utility: Button creation
-local function createPetButton(petModel)
+local layout = Instance.new("UIListLayout", scrolling)
+layout.SortOrder = Enum.SortOrder.LayoutOrder
+
+-- Pet button maker
+local function makeButton(pet)
 	local btn = Instance.new("TextButton")
-	btn.Size = UDim2.new(1, -10, 0, 40)
-	btn.Text = "🐾 " .. petModel.Name
+	btn.Size = UDim2.new(1, -8, 0, 40)
+	btn.Text = "🐾 " .. pet.Name
 	btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 	btn.TextColor3 = Color3.new(1, 1, 1)
 	btn.Font = Enum.Font.Gotham
 	btn.TextScaled = true
 
 	btn.MouseButton1Click:Connect(function()
-		local clone = petModel:Clone()
+		local clone = pet:Clone()
 		clone.Parent = workspace
 
-		local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-		if hrp then
-			clone:PivotTo(hrp.CFrame * CFrame.new(math.random(-2, 2), 0, math.random(-2, 2)))
+		local root = char:FindFirstChild("HumanoidRootPart")
+		if root then
+			clone:PivotTo(root.CFrame * CFrame.new(3, 0, 3))
 		end
 
-		-- Freeze and clean up pet clone
+		-- Freeze in place, no collision
 		for _, part in ipairs(clone:GetDescendants()) do
 			if part:IsA("BasePart") then
 				part.Anchored = true
@@ -56,28 +80,15 @@ local function createPetButton(petModel)
 		end
 	end)
 
-	return btn
+	btn.Parent = scrolling
 end
 
--- Filter and add real pet models
-local foundPets = {}
-
-for _, model in ipairs(workspace:GetDescendants()) do
-	if model:IsA("Model") and not model:FindFirstChildWhichIsA("Humanoid") then
-		local nameLower = model.Name:lower()
-		if nameLower:match("pet") or nameLower:match("kitsune") or nameLower:match("cat") or nameLower:match("dragon") then
-			if model:FindFirstChildWhichIsA("BasePart") and not foundPets[model.Name] then
-				foundPets[model.Name] = true
-				local btn = createPetButton(model)
-				btn.Parent = scrolling
-			end
-		end
+-- Load pet buttons
+for _, pet in ipairs(petFolder:GetChildren()) do
+	if pet:IsA("Model") then
+		makeButton(pet)
 	end
 end
-
--- Layout
-local layout = Instance.new("UIListLayout", scrolling)
-layout.SortOrder = Enum.SortOrder.LayoutOrder
 
 task.wait(0.1)
 scrolling.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y)
