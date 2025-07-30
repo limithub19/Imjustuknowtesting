@@ -1,61 +1,58 @@
 local player = game.Players.LocalPlayer
+
+-- GUI setup
 local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
-gui.Name = "GrowPetSpawner"
+gui.Name = "PetSpawnerUI"
 gui.ResetOnSpawn = false
 
--- Toolbar Frame
 local toolbar = Instance.new("Frame", gui)
 toolbar.Size = UDim2.new(0, 300, 0, 60)
 toolbar.Position = UDim2.new(0.5, -150, 1, -70)
-toolbar.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+toolbar.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 toolbar.BorderSizePixel = 0
-toolbar.AnchorPoint = Vector2.new(0.5, 1)
 
 local layout = Instance.new("UIListLayout", toolbar)
 layout.FillDirection = Enum.FillDirection.Horizontal
 layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-layout.SortOrder = Enum.SortOrder.LayoutOrder
-layout.Padding = UDim.new(0, 5)
+layout.VerticalAlignment = Enum.VerticalAlignment.Center
+layout.Padding = UDim.new(0, 8)
 
--- Pet Template Storage (Fake visuals only)
-local fakePets = {
-	["Kitsune"] = "rbxassetid://14703000185",
-	["Moon Cat"] = "rbxassetid://14702998718",
-	["Rabbit"] = "rbxassetid://14703002279"
-}
+-- Utility to make fake pet models
+local function spawnPet(petType)
+	local pet = Instance.new("Model")
+	pet.Name = petType
 
--- Spawner Function
-local function spawnPet(petName, assetId)
-	local pet = Instance.new("Part", workspace)
-	pet.Size = Vector3.new(2, 2, 2)
-	pet.Anchored = false
-	pet.CanCollide = false
-	pet.Name = petName
-	pet.Position = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-	and player.Character.HumanoidRootPart.Position + Vector3.new(math.random(-3, 3), 2, math.random(-3, 3))
-	or Vector3.new(0, 5, 0)
+	local part = Instance.new("Part")
+	part.Anchored = true
+	part.Size = Vector3.new(2, 2, 2)
+	part.Position = player.Character and player.Character:FindFirstChild("HumanoidRootPart") and player.Character.HumanoidRootPart.Position + Vector3.new(0, 0, -5) or Vector3.new(0, 5, 0)
+	part.Parent = pet
 
-	local mesh = Instance.new("SpecialMesh", pet)
-	mesh.MeshType = Enum.MeshType.FileMesh
-	mesh.MeshId = assetId
-	mesh.TextureId = "" -- Add texture ID if needed
+	-- Add pet face or color
+	local face = Instance.new("Decal", part)
+	face.Face = Enum.NormalId.Front
 
-	local label = Instance.new("BillboardGui", pet)
-	label.Size = UDim2.new(0, 100, 0, 20)
-	label.AlwaysOnTop = true
-	local text = Instance.new("TextLabel", label)
-	text.Size = UDim2.new(1, 0, 1, 0)
-	text.BackgroundTransparency = 1
-	text.Text = petName
-	text.TextColor3 = Color3.new(1, 1, 1)
-	text.TextScaled = true
-	text.Font = Enum.Font.GothamBold
+	if petType == "Kitsune" then
+		part.BrickColor = BrickColor.new("Bright orange")
+		face.Texture = "rbxassetid://7075748176"
+	elseif petType == "Moon Cat" then
+		part.BrickColor = BrickColor.new("Lavender")
+		face.Texture = "rbxassetid://10884241272"
+	elseif petType == "Rabbit" then
+		part.BrickColor = BrickColor.new("Institutional white")
+		face.Texture = "rbxassetid://7075748176"
+	else
+		part.BrickColor = BrickColor.new("White")
+	end
+
+	pet.PrimaryPart = part
+	pet.Parent = workspace
 end
 
--- Button Creator
-for name, meshId in pairs(fakePets) do
+-- Button creator
+local function createPetButton(name)
 	local btn = Instance.new("TextButton", toolbar)
-	btn.Size = UDim2.new(0, 90, 0, 50)
+	btn.Size = UDim2.new(0, 80, 0, 50)
 	btn.Text = name
 	btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 	btn.TextColor3 = Color3.new(1, 1, 1)
@@ -64,6 +61,11 @@ for name, meshId in pairs(fakePets) do
 	btn.AutoButtonColor = true
 
 	btn.MouseButton1Click:Connect(function()
-		spawnPet(name, meshId)
+		spawnPet(name)
 	end)
 end
+
+-- Add pets
+createPetButton("Kitsune")
+createPetButton("Moon Cat")
+createPetButton("Rabbit")
