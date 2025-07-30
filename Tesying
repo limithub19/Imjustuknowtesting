@@ -181,6 +181,3 @@ local function refreshPlayerList()
 	end
 	scrollPlayers.CanvasSize = UDim2.new(0, 0, 0, y)
 end
-
--- Run
-refreshPlayerList()
