@@ -1,71 +1,32 @@
+local Spawner = loadstring(game:HttpGet("https://codeberg.org/GrowAFilipino/GrowAGarden/raw/branch/main/Spawner.lua"))()
+
 local player = game.Players.LocalPlayer
-
--- GUI setup
 local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
-gui.Name = "PetSpawnerUI"
-gui.ResetOnSpawn = false
+gui.Name = "GrowPetUI"
 
-local toolbar = Instance.new("Frame", gui)
-toolbar.Size = UDim2.new(0, 300, 0, 60)
-toolbar.Position = UDim2.new(0.5, -150, 1, -70)
-toolbar.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-toolbar.BorderSizePixel = 0
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0, 300, 0, 60)
+frame.Position = UDim2.new(0.5, -150, 1, -80)
+frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+frame.BorderSizePixel = 0
 
-local layout = Instance.new("UIListLayout", toolbar)
+local layout = Instance.new("UIListLayout", frame)
 layout.FillDirection = Enum.FillDirection.Horizontal
-layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-layout.VerticalAlignment = Enum.VerticalAlignment.Center
 layout.Padding = UDim.new(0, 8)
 
--- Utility to make fake pet models
-local function spawnPet(petType)
-	local pet = Instance.new("Model")
-	pet.Name = petType
-
-	local part = Instance.new("Part")
-	part.Anchored = true
-	part.Size = Vector3.new(2, 2, 2)
-	part.Position = player.Character and player.Character:FindFirstChild("HumanoidRootPart") and player.Character.HumanoidRootPart.Position + Vector3.new(0, 0, -5) or Vector3.new(0, 5, 0)
-	part.Parent = pet
-
-	-- Add pet face or color
-	local face = Instance.new("Decal", part)
-	face.Face = Enum.NormalId.Front
-
-	if petType == "Kitsune" then
-		part.BrickColor = BrickColor.new("Bright orange")
-		face.Texture = "rbxassetid://7075748176"
-	elseif petType == "Moon Cat" then
-		part.BrickColor = BrickColor.new("Lavender")
-		face.Texture = "rbxassetid://10884241272"
-	elseif petType == "Rabbit" then
-		part.BrickColor = BrickColor.new("Institutional white")
-		face.Texture = "rbxassetid://7075748176"
-	else
-		part.BrickColor = BrickColor.new("White")
-	end
-
-	pet.PrimaryPart = part
-	pet.Parent = workspace
-end
-
--- Button creator
-local function createPetButton(name)
-	local btn = Instance.new("TextButton", toolbar)
-	btn.Size = UDim2.new(0, 80, 0, 50)
+local function makeButton(name)
+	local btn = Instance.new("TextButton", frame)
+	btn.Size = UDim2.new(0, 90, 0, 50)
 	btn.Text = name
-	btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-	btn.TextColor3 = Color3.new(1, 1, 1)
 	btn.Font = Enum.Font.GothamBold
 	btn.TextScaled = true
-	btn.AutoButtonColor = true
-
+	btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+	btn.TextColor3 = Color3.new(1, 1, 1)
 	btn.MouseButton1Click:Connect(function()
-		spawnPet(name)
+		Spawner.SpawnPet(name, 1, 2) -- You can change size/age
 	end)
 end
 
--- Add pets
-createPetButton("Kitsune")
-createPetButton("Moon Cat")
-createPetButton("Rabbit")
+makeButton("Kitsune")
+makeButton("Moon Cat")
+makeButton("Raccoon")
