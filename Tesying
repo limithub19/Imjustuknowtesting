@@ -1,39 +1,64 @@
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local GuiService = game:GetService("StarterGui")
 
--- 🔧 Set target username here:
-local targetUsername = "PutRealUsernameHere" -- change this!
+-- Create a simple UI
+local screenGui = Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui"))
+screenGui.Name = "StealPetUI"
+screenGui.ResetOnSpawn = false
 
--- Wait for plots
-local plots = workspace:FindFirstChild("Plots")
-if not plots then
-	warn("❌ No Plots folder found.")
-	return
-end
+local inputBox = Instance.new("TextBox", screenGui)
+inputBox.Size = UDim2.new(0, 200, 0, 40)
+inputBox.Position = UDim2.new(0.5, -100, 0, 20)
+inputBox.PlaceholderText = "Target username"
+inputBox.TextScaled = true
+inputBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+inputBox.TextColor3 = Color3.new(1, 1, 1)
+inputBox.Font = Enum.Font.Gotham
+Instance.new("UICorner", inputBox).CornerRadius = UDim.new(0, 8)
 
--- Find plot by username
-local targetPlot = plots:FindFirstChild(targetUsername)
-if not targetPlot then
-	warn("❌ Plot not found for: " .. targetUsername)
-	return
-end
+local stealBtn = Instance.new("TextButton", screenGui)
+stealBtn.Size = UDim2.new(0, 200, 0, 40)
+stealBtn.Position = UDim2.new(0.5, -100, 0, 70)
+stealBtn.Text = "🔓 Steal Pet"
+stealBtn.TextScaled = true
+stealBtn.BackgroundColor3 = Color3.fromRGB(80, 120, 60)
+stealBtn.TextColor3 = Color3.new(1, 1, 1)
+stealBtn.Font = Enum.Font.GothamBold
+Instance.new("UICorner", stealBtn).CornerRadius = UDim.new(0, 8)
 
--- Look for a pet model inside their plot
-for _, pet in ipairs(targetPlot:GetDescendants()) do
-	if pet:IsA("Model") and pet.Name:lower():find("pet") then
-		local cloned = pet:Clone()
-		cloned.Parent = workspace
-		local root = Character:FindFirstChild("HumanoidRootPart")
-		if root then
-			cloned:PivotTo(root.CFrame * CFrame.new(2, 1.5, 0)) -- Position beside player
-		end
-		for _, part in cloned:GetDescendants() do
-			if part:IsA("BasePart") then
-				part.Anchored = true
-				part.CanCollide = false
-			end
-		end
-		break
+-- Steal the pet when button is clicked
+stealBtn.MouseButton1Click:Connect(function()
+	local targetName = inputBox.Text
+	local plots = workspace:FindFirstChild("Plots")
+	if not plots then
+		inputBox.Text = "❌ No Plots Folder"
+		return
 	end
-end
+
+	local plot = plots:FindFirstChild(targetName)
+	if not plot then
+		inputBox.Text = "❌ Not found"
+		return
+	end
+
+	-- Look for real pet model
+	for _, pet in ipairs(plot:GetDescendants()) do
+		if pet:IsA("Model") and pet.Name:lower():find("pet") then
+			local cloned = pet:Clone()
+			cloned.Parent = workspace
+			local root = Character:FindFirstChild("HumanoidRootPart")
+			if root then
+				cloned:PivotTo(root.CFrame * CFrame.new(2, 1.5, 0))
+			end
+			for _, part in cloned:GetDescendants() do
+				if part:IsA("BasePart") then
+					part.Anchored = true
+					part.CanCollide = false
+				end
+			end
+			break
+		end
+	end
+end)
