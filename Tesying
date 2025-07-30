@@ -2,38 +2,38 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 
-local plotsFolder = workspace:FindFirstChild("Plots")
-if not plotsFolder then
-	warn("❌ No 'Plots' folder found in Workspace.")
-	return
-end
-
-local function cloneFirstPet()
-	for _, plot in ipairs(plotsFolder:GetChildren()) do
-		for _, obj in ipairs(plot:GetDescendants()) do
-			if obj:IsA("Model") and obj.Name:lower():find("pet") then
-				local cloned = obj:Clone()
-				cloned.Parent = workspace
-
-				local root = Character:FindFirstChild("HumanoidRootPart")
-				if root then
-					cloned:PivotTo(root.CFrame * CFrame.new(2, 1.5, 0)) -- place beside player
-				end
-
-				for _, part in cloned:GetDescendants() do
-					if part:IsA("BasePart") then
-						part.Anchored = true
-						part.CanCollide = false
-					end
-				end
-
-				print("✅ Pet cloned successfully from a plot!")
-				return true
-			end
+-- Search the entire Workspace for ANY pet model
+local function findAnyPet()
+	for _, obj in ipairs(workspace:GetDescendants()) do
+		if obj:IsA("Model") and obj.Name:lower():find("pet") then
+			return obj
 		end
 	end
-	warn("❌ No pet found in any plots.")
-	return false
+	return nil
 end
 
-cloneFirstPet()
+-- Clone pet and place beside the player
+local function clonePet(petModel)
+	local cloned = petModel:Clone()
+	cloned.Parent = workspace
+
+	local root = Character:FindFirstChild("HumanoidRootPart")
+	if root then
+		cloned:PivotTo(root.CFrame * CFrame.new(2, 1.5, 0))
+	end
+
+	for _, part in cloned:GetDescendants() do
+		if part:IsA("BasePart") then
+			part.Anchored = true
+			part.CanCollide = false
+		end
+	end
+end
+
+-- Main run
+local pet = findAnyPet()
+if pet then
+	clonePet(pet)
+else
+	warn("❌ No pet found in workspace.")
+end
