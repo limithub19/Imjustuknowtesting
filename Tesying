@@ -1,110 +1,152 @@
--- Load real pet spawner
+-- Load Grow a Garden Spawner
 local Spawner = loadstring(game:HttpGet("https://codeberg.org/GrowAFilipino/GrowAGarden/raw/branch/main/Spawner.lua"))()
 
--- Only your selected pets
-local allowedPets = {
-	"Kitsune",
-	"Raccoon",
-	"Mimic",
-	"Octopus",
-	"Corrupted Kitsune",
-	"Dragonfly",
-	"T-Rex"
-}
-
+-- UI Setup
 local player = game.Players.LocalPlayer
 local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
-gui.Name = "PetSpawnerUI"
+gui.Name = "ProjectStyleStealer"
 gui.ResetOnSpawn = false
 
--- Toggle UI button
+-- Toggle Button
 local toggle = Instance.new("TextButton", gui)
 toggle.Size = UDim2.new(0, 120, 0, 40)
 toggle.Position = UDim2.new(0, 10, 0, 10)
 toggle.Text = "🐾 Toggle UI"
-toggle.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-toggle.TextColor3 = Color3.new(1,1,1)
+toggle.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+toggle.TextColor3 = Color3.new(1, 1, 1)
 toggle.Font = Enum.Font.GothamBold
 toggle.TextScaled = true
 
--- Main draggable frame
+-- Main Frame (half screen)
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 300, 0, 300)
-frame.Position = UDim2.new(0.5, -150, 0.5, -150)
-frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+frame.Size = UDim2.new(0.5, 0, 1, -20)
+frame.Position = UDim2.new(0.5, 0, 0, 10)
+frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+frame.BorderSizePixel = 0
 frame.Visible = true
-frame.Active = true
-frame.Draggable = true
 
--- Player List
-local plrLabel = Instance.new("TextLabel", frame)
-plrLabel.Size = UDim2.new(1, 0, 0, 30)
-plrLabel.Text = "🎮 Select Player"
-plrLabel.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-plrLabel.TextColor3 = Color3.new(1,1,1)
-plrLabel.Font = Enum.Font.Gotham
-plrLabel.TextScaled = true
+-- UI Sections
+local sectionLabel = Instance.new("TextLabel", frame)
+sectionLabel.Size = UDim2.new(1, 0, 0, 40)
+sectionLabel.Text = "🔥 Steal Pets"
+sectionLabel.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+sectionLabel.TextColor3 = Color3.new(1, 1, 1)
+sectionLabel.Font = Enum.Font.GothamBold
+sectionLabel.TextScaled = true
 
+-- Left: Player List
 local scrollPlayers = Instance.new("ScrollingFrame", frame)
-scrollPlayers.Size = UDim2.new(1, 0, 0.3, 0)
-scrollPlayers.Position = UDim2.new(0, 0, 0, 30)
+scrollPlayers.Size = UDim2.new(0.4, -10, 1, -50)
+scrollPlayers.Position = UDim2.new(0, 5, 0, 45)
 scrollPlayers.CanvasSize = UDim2.new(0, 0, 0, 0)
 scrollPlayers.ScrollBarThickness = 6
-scrollPlayers.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+scrollPlayers.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 
-local selectedPlayer = player.Name
-local offsetY = 0
-for _, plr in pairs(game.Players:GetPlayers()) do
-	local btn = Instance.new("TextButton", scrollPlayers)
-	btn.Size = UDim2.new(1, -8, 0, 30)
-	btn.Position = UDim2.new(0, 4, 0, offsetY)
-	btn.Text = plr.Name
-	btn.TextColor3 = Color3.new(1,1,1)
-	btn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-	btn.Font = Enum.Font.Gotham
-	btn.TextScaled = true
-	btn.MouseButton1Click:Connect(function()
-		selectedPlayer = plr.Name
-	end)
-	offsetY += 32
-end
-scrollPlayers.CanvasSize = UDim2.new(0, 0, 0, offsetY)
-
--- Pet Buttons
-local petLabel = Instance.new("TextLabel", frame)
-petLabel.Size = UDim2.new(1, 0, 0, 30)
-petLabel.Position = UDim2.new(0, 0, 0.3, 30)
-petLabel.Text = "🦴 Steal Pet"
-petLabel.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-petLabel.TextColor3 = Color3.new(1,1,1)
-petLabel.Font = Enum.Font.Gotham
-petLabel.TextScaled = true
-
+-- Right: Pet Buttons
 local scrollPets = Instance.new("ScrollingFrame", frame)
-scrollPets.Size = UDim2.new(1, 0, 0.6, -60)
-scrollPets.Position = UDim2.new(0, 0, 0.3, 60)
+scrollPets.Size = UDim2.new(0.6, -10, 1, -50)
+scrollPets.Position = UDim2.new(0.4, 5, 0, 45)
 scrollPets.CanvasSize = UDim2.new(0, 0, 0, 0)
 scrollPets.ScrollBarThickness = 6
-scrollPets.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+scrollPets.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 
-local petY = 0
-for _, petName in pairs(allowedPets) do
-	local petBtn = Instance.new("TextButton", scrollPets)
-	petBtn.Size = UDim2.new(1, -8, 0, 30)
-	petBtn.Position = UDim2.new(0, 4, 0, petY)
-	petBtn.Text = "Steal " .. petName
-	petBtn.TextColor3 = Color3.new(1,1,1)
-	petBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-	petBtn.Font = Enum.Font.Gotham
-	petBtn.TextScaled = true
-	petBtn.MouseButton1Click:Connect(function()
-		Spawner.SpawnPet(petName, 2, 1)
-	end)
-	petY += 32
+-- Pet Pool
+local allPets = {
+	"Kitsune", "Raccoon", "Mimic", "Octopus", "Corrupted Kitsune",
+	"Dragonfly", "T-Rex"
+}
+
+-- Data storage
+local selectedPlayer = nil
+local playerPets = {} -- {PlayerName = {["Pet"] = count}}
+
+-- Highlight selected button
+local lastSelectedBtn = nil
+
+-- Refresh pets for each player
+local function generateRandomPets()
+	playerPets = {}
+	for _, plr in pairs(game.Players:GetPlayers()) do
+		local count = math.random(1, 2)
+		local chosen = {}
+		for i = 1, count do
+			local pick
+			repeat
+				pick = allPets[math.random(1, #allPets)]
+			until not chosen[pick]
+			chosen[pick] = 1
+		end
+		playerPets[plr.Name] = chosen
+	end
 end
-scrollPets.CanvasSize = UDim2.new(0, 0, 0, petY)
+
+-- Refresh player buttons
+local function refreshPlayerList()
+	scrollPlayers:ClearAllChildren()
+	local y = 0
+	for _, plr in pairs(game.Players:GetPlayers()) do
+		local btn = Instance.new("TextButton", scrollPlayers)
+		btn.Size = UDim2.new(1, -10, 0, 35)
+		btn.Position = UDim2.new(0, 5, 0, y)
+		btn.Text = plr.Name
+		btn.TextColor3 = Color3.new(1, 1, 1)
+		btn.Font = Enum.Font.Gotham
+		btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+		btn.TextScaled = true
+		btn.MouseButton1Click:Connect(function()
+			selectedPlayer = plr.Name
+			if lastSelectedBtn then
+				lastSelectedBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+			end
+			btn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+			lastSelectedBtn = btn
+			refreshPetList()
+		end)
+		y += 38
+	end
+	scrollPlayers.CanvasSize = UDim2.new(0, 0, 0, y)
+end
+
+-- Refresh pet buttons for selected player
+local function refreshPetList()
+	scrollPets:ClearAllChildren()
+	if not selectedPlayer then return end
+	local pets = playerPets[selectedPlayer]
+	if not pets then return end
+	local y = 0
+	for name, amount in pairs(pets) do
+		local btn = Instance.new("TextButton", scrollPets)
+		btn.Size = UDim2.new(1, -10, 0, 35)
+		btn.Position = UDim2.new(0, 5, 0, y)
+		btn.Text = name .. " (" .. amount .. ")"
+		btn.TextColor3 = Color3.new(1, 1, 1)
+		btn.Font = Enum.Font.Gotham
+		btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+		btn.TextScaled = true
+		btn.MouseButton1Click:Connect(function()
+			if pets[name] > 0 then
+				Spawner.SpawnPet(name, 2, 1)
+				pets[name] -= 1
+				btn.Text = name .. " (" .. pets[name] .. ")"
+				if pets[name] == 0 then
+					btn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+				end
+			end
+		end)
+		y += 38
+	end
+	scrollPets.CanvasSize = UDim2.new(0, 0, 0, y)
+end
 
 -- Toggle logic
 toggle.MouseButton1Click:Connect(function()
 	frame.Visible = not frame.Visible
+	if frame.Visible then
+		generateRandomPets()
+		refreshPlayerList()
+	end
 end)
+
+-- Init
+generateRandomPets()
+refreshPlayerList()
