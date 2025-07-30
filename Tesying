@@ -1,28 +1,24 @@
--- Get player
 local player = game.Players.LocalPlayer
 
--- Mobile UI
+-- GUI
 local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
-gui.Name = "StealUI"
+gui.Name = "PetStealUI"
 gui.ResetOnSpawn = false
 
--- Frame
 local frame = Instance.new("Frame", gui)
 frame.Size = UDim2.new(0, 300, 0, 180)
 frame.Position = UDim2.new(0.5, -150, 0.5, -90)
-frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+frame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 frame.Active = true
 frame.Draggable = true
 
--- TextBox
-local input = Instance.new("TextBox", frame)
-input.Size = UDim2.new(0.8, 0, 0.2, 0)
-input.Position = UDim2.new(0.1, 0, 0.15, 0)
-input.PlaceholderText = "Enter player name..."
-input.TextColor3 = Color3.new(1, 1, 1)
-input.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+local textbox = Instance.new("TextBox", frame)
+textbox.Size = UDim2.new(0.8, 0, 0.2, 0)
+textbox.Position = UDim2.new(0.1, 0, 0.15, 0)
+textbox.PlaceholderText = "Enter player name..."
+textbox.TextColor3 = Color3.new(1, 1, 1)
+textbox.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
 
--- Button
 local button = Instance.new("TextButton", frame)
 button.Size = UDim2.new(0.6, 0, 0.2, 0)
 button.Position = UDim2.new(0.2, 0, 0.45, 0)
@@ -30,39 +26,38 @@ button.Text = "Steal Pet"
 button.TextColor3 = Color3.new(1, 1, 1)
 button.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
 
--- BIG center message (mobile safe)
-local centerMsg = Instance.new("TextLabel", gui)
-centerMsg.Size = UDim2.new(0.5, 0, 0.1, 0)
-centerMsg.Position = UDim2.new(0.25, 0, 0.05, 0)
-centerMsg.TextColor3 = Color3.new(1, 1, 1)
-centerMsg.BackgroundTransparency = 1
-centerMsg.TextScaled = true
-centerMsg.Text = ""
+local label = Instance.new("TextLabel", gui)
+label.Size = UDim2.new(1, 0, 0.05, 0)
+label.Position = UDim2.new(0, 0, 0, 0)
+label.BackgroundTransparency = 1
+label.TextColor3 = Color3.new(1, 1, 1)
+label.TextScaled = true
+label.Text = ""
 
--- Clone logic
+-- Logic
 button.MouseButton1Click:Connect(function()
-    local name = input.Text
-    local target = game.Players:FindFirstChild(name)
-    if not target then
-        centerMsg.Text = "❌ Player not found."
-        return
+    local targetName = textbox.Text
+    local found = false
+
+    for _, obj in pairs(workspace:GetDescendants()) do
+        if obj:IsA("Model") and obj.Name:lower():find("pet") then
+            if obj:FindFirstChildWhichIsA("Humanoid") or obj:FindFirstChildWhichIsA("Part") then
+                if obj.Name:lower():find(targetName:lower()) or (obj.Parent and obj.Parent.Name:lower():find(targetName:lower())) then
+                    local clone = obj:Clone()
+                    clone.Parent = workspace
+                    local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+                    if hrp then
+                        clone:MoveTo(hrp.Position + Vector3.new(3, 0, 0))
+                    end
+                    label.Text = "✅ Cloned pet from " .. targetName
+                    found = true
+                    break
+                end
+            end
+        end
     end
 
-    -- Try both folder formats
-    local petFolder = workspace:FindFirstChild(name .. "'s Pets") or workspace:FindFirstChild(name .. "_Pets")
-
-    if not petFolder or #petFolder:GetChildren() == 0 then
-        centerMsg.Text = "❌ No visible pets to steal."
-        return
+    if not found then
+        label.Text = "❌ No pet found for " .. targetName
     end
-
-    -- Try to clone
-    local pet = petFolder:GetChildren()[1]
-    local clone = pet:Clone()
-    clone.Parent = workspace
-    local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-    if root then
-        clone:MoveTo(root.Position + Vector3.new(3, 0, 0))
-    end
-    centerMsg.Text = "✅ Stole: " .. pet.Name
 end)
