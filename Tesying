@@ -1,96 +1,69 @@
 local player = game.Players.LocalPlayer
-
--- GUI Setup
 local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
-gui.Name = "FakePetSpawner"
+gui.Name = "GrowPetSpawner"
 gui.ResetOnSpawn = false
 
-local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 300, 0, 200)
-frame.Position = UDim2.new(0.5, -150, 0.4, 0)
-frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-frame.BorderSizePixel = 0
-frame.Active = true
-frame.Draggable = true
+-- Toolbar Frame
+local toolbar = Instance.new("Frame", gui)
+toolbar.Size = UDim2.new(0, 300, 0, 60)
+toolbar.Position = UDim2.new(0.5, -150, 1, -70)
+toolbar.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+toolbar.BorderSizePixel = 0
+toolbar.AnchorPoint = Vector2.new(0.5, 1)
 
-local usernameBox = Instance.new("TextBox", frame)
-usernameBox.Size = UDim2.new(1, -10, 0, 30)
-usernameBox.Position = UDim2.new(0, 5, 0, 5)
-usernameBox.PlaceholderText = "Enter Username"
-usernameBox.Text = ""
-usernameBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-usernameBox.TextColor3 = Color3.new(1, 1, 1)
-usernameBox.Font = Enum.Font.Gotham
-usernameBox.TextScaled = true
-
-local scrolling = Instance.new("ScrollingFrame", frame)
-scrolling.Size = UDim2.new(1, -10, 1, -45)
-scrolling.Position = UDim2.new(0, 5, 0, 40)
-scrolling.CanvasSize = UDim2.new(0, 0, 0, 0)
-scrolling.ScrollBarThickness = 6
-scrolling.BackgroundTransparency = 0.1
-scrolling.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-
-local layout = Instance.new("UIListLayout", scrolling)
+local layout = Instance.new("UIListLayout", toolbar)
+layout.FillDirection = Enum.FillDirection.Horizontal
+layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 layout.SortOrder = Enum.SortOrder.LayoutOrder
+layout.Padding = UDim.new(0, 5)
 
--- Fake Pet Models
+-- Pet Template Storage (Fake visuals only)
 local fakePets = {
-    ["Kitsune"] = "rbxassetid://17414505428",  -- Replace with real pet model IDs
-    ["Moon Cat"] = "rbxassetid://17414505572",
-    ["Rabbit"] = "rbxassetid://17414505643",
+	["Kitsune"] = "rbxassetid://14703000185",
+	["Moon Cat"] = "rbxassetid://14702998718",
+	["Rabbit"] = "rbxassetid://14703002279"
 }
 
--- Spawn Logic
-local function spawnFakePet(petName, ownerName)
-    local petId = fakePets[petName]
-    if not petId then return end
+-- Spawner Function
+local function spawnPet(petName, assetId)
+	local pet = Instance.new("Part", workspace)
+	pet.Size = Vector3.new(2, 2, 2)
+	pet.Anchored = false
+	pet.CanCollide = false
+	pet.Name = petName
+	pet.Position = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+	and player.Character.HumanoidRootPart.Position + Vector3.new(math.random(-3, 3), 2, math.random(-3, 3))
+	or Vector3.new(0, 5, 0)
 
-    local success, model = pcall(function()
-        return game:GetService("InsertService"):LoadAsset(petId)
-    end)
-    if success and model then
-        local pet = model:FindFirstChildWhichIsA("Model") or model
-        pet.Parent = workspace
+	local mesh = Instance.new("SpecialMesh", pet)
+	mesh.MeshType = Enum.MeshType.FileMesh
+	mesh.MeshId = assetId
+	mesh.TextureId = "" -- Add texture ID if needed
 
-        local root = pet:FindFirstChild("HumanoidRootPart") or pet:FindFirstChildWhichIsA("BasePart")
-        if root and player.Character then
-            root.CFrame = player.Character:GetPivot() + Vector3.new(math.random(-4,4),0,math.random(-4,4))
-        end
-
-        -- Fake Ownership Label
-        local label = Instance.new("BillboardGui", pet)
-        label.Size = UDim2.new(0, 200, 0, 40)
-        label.StudsOffset = Vector3.new(0, 3, 0)
-        label.AlwaysOnTop = true
-
-        local txt = Instance.new("TextLabel", label)
-        txt.Size = UDim2.new(1, 0, 1, 0)
-        txt.BackgroundTransparency = 1
-        txt.Text = petName .. " (Owned by: " .. ownerName .. ")"
-        txt.TextColor3 = Color3.new(1, 1, 1)
-        txt.Font = Enum.Font.GothamBold
-        txt.TextScaled = true
-    else
-        warn("Failed to load pet model:", petId)
-    end
+	local label = Instance.new("BillboardGui", pet)
+	label.Size = UDim2.new(0, 100, 0, 20)
+	label.AlwaysOnTop = true
+	local text = Instance.new("TextLabel", label)
+	text.Size = UDim2.new(1, 0, 1, 0)
+	text.BackgroundTransparency = 1
+	text.Text = petName
+	text.TextColor3 = Color3.new(1, 1, 1)
+	text.TextScaled = true
+	text.Font = Enum.Font.GothamBold
 end
 
--- Buttons
-for name in pairs(fakePets) do
-    local btn = Instance.new("TextButton", scrolling)
-    btn.Size = UDim2.new(1, -10, 0, 40)
-    btn.Text = "🧬 Spawn " .. name
-    btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-    btn.TextColor3 = Color3.new(1, 1, 1)
-    btn.Font = Enum.Font.Gotham
-    btn.TextScaled = true
+-- Button Creator
+for name, meshId in pairs(fakePets) do
+	local btn = Instance.new("TextButton", toolbar)
+	btn.Size = UDim2.new(0, 90, 0, 50)
+	btn.Text = name
+	btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+	btn.TextColor3 = Color3.new(1, 1, 1)
+	btn.Font = Enum.Font.GothamBold
+	btn.TextScaled = true
+	btn.AutoButtonColor = true
 
-    btn.MouseButton1Click:Connect(function()
-        local targetUser = usernameBox.Text ~= "" and usernameBox.Text or "UnknownUser"
-        spawnFakePet(name, targetUser)
-    end)
+	btn.MouseButton1Click:Connect(function()
+		spawnPet(name, meshId)
+	end)
 end
-
-task.wait(0.2)
-scrolling.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y)
