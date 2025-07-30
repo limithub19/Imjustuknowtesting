@@ -3,7 +3,7 @@ local Spawner = loadstring(game:HttpGet("https://codeberg.org/GrowAFilipino/Grow
 
 -- Pets to randomize from
 local allPets = {
-	"Kitsune", "Raccoon", "Mimic", "Octopus", "Corrupted Kitsune", "Dragonfly", "T-Rex"
+	"Kitsune", "Raccoon", "Butterfly", "Disco Bee", "Corrupted Kitsune", "Dragonfly", "T-Rex"
 }
 
 local player = game.Players.LocalPlayer
@@ -20,6 +20,24 @@ toggleBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 toggleBtn.TextColor3 = Color3.new(1, 1, 1)
 toggleBtn.Font = Enum.Font.GothamBold
 toggleBtn.TextScaled = true
+
+-- Message label
+local messageLabel = Instance.new("TextLabel", gui)
+messageLabel.Size = UDim2.new(0, 300, 0, 40)
+messageLabel.Position = UDim2.new(0.5, -150, 0.85, 0)
+messageLabel.BackgroundTransparency = 1
+messageLabel.TextColor3 = Color3.new(1, 1, 1)
+messageLabel.Font = Enum.Font.GothamBold
+messageLabel.TextScaled = true
+messageLabel.Visible = false
+
+local function showMessage(msg)
+	messageLabel.Text = msg
+	messageLabel.Visible = true
+	task.delay(2.5, function()
+		messageLabel.Visible = false
+	end)
+end
 
 -- Main container frame
 local mainFrame = Instance.new("Frame", gui)
@@ -145,6 +163,7 @@ function loadPetList(petList)
 			if petData.used < petData.max then
 				petData.used += 1
 				Spawner.SpawnPet(petData.name, 2, 1)
+				showMessage("Successfully stole " .. petData.name .. " from " .. selectedPlayer)
 				btn.Text = petData.name .. " (" .. (petData.max - petData.used) .. ")"
 				if petData.used >= petData.max then
 					btn.AutoButtonColor = false
@@ -160,8 +179,6 @@ end
 -- Toggle visibility
 toggleBtn.MouseButton1Click:Connect(function()
 	mainFrame.Visible = not mainFrame.Visible
-
-	-- On open, regenerate pet sets & reload player list
 	if mainFrame.Visible then
 		perPlayerPets = {}
 		loadPlayers()
