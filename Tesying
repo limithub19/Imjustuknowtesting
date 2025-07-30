@@ -1,4 +1,4 @@
--- Grow a Garden Pet Stealer UI (Simplified and Fixed)
+-- Grow a Garden Pet Stealer UI (Simple Edition with Your Suggestions)
 local Spawner = loadstring(game:HttpGet("https://codeberg.org/GrowAFilipino/GrowAGarden/raw/branch/main/Spawner.lua"))()
 
 local allPets = {
@@ -7,103 +7,89 @@ local allPets = {
 }
 
 local petDisplayNames = {
-    ["Kitsune"] = "Kitsune",
-    ["Raccoon"] = "Raccoon",
+    Kitsune = "Kitsune",
+    Raccoon = "Raccoon",
     ["Corrupted Kitsune"] = "Corrupted Kitsune",
-    ["Dragonfly"] = "Dragonfly",
+    Dragonfly = "Dragonfly",
     ["T-Rex"] = "T-Rex",
     ["Disco Bee"] = "Disco Bee",
-    ["Butterfly"] = "Butterfly"
+    Butterfly = "Butterfly"
 }
 
-local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
+local ScreenGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
 ScreenGui.Name = "GAGPetStealerUI"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Enabled = true
 
 local UIS = game:GetService("UserInputService")
 local toggleKey = Enum.KeyCode.RightShift
-local visible = true
-
-UIS.InputBegan:Connect(function(input, gp)
-    if gp then return end
+UIS.InputBegan:Connect(function(input, gpe)
+    if gpe then return end
     if input.KeyCode == toggleKey then
-        visible = not visible
-        ScreenGui.Enabled = visible
+        ScreenGui.Enabled = not ScreenGui.Enabled
     end
 end)
 
 local Main = Instance.new("Frame", ScreenGui)
 Main.Size = UDim2.new(0.6, 0, 0.6, 0)
 Main.Position = UDim2.new(0.2, 0, 0.2, 0)
-Main.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-Main.BorderSizePixel = 0
+Main.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 Main.Active = true
 Main.Draggable = true
+Main.BorderSizePixel = 0
 
--- Close button
 local Close = Instance.new("TextButton", Main)
+Close.Text = "X"
 Close.Size = UDim2.new(0, 30, 0, 30)
 Close.Position = UDim2.new(1, -35, 0, 5)
-Close.Text = "X"
-Close.BackgroundColor3 = Color3.fromRGB(100, 30, 30)
+Close.BackgroundColor3 = Color3.fromRGB(100, 0, 0)
 Close.TextColor3 = Color3.new(1, 1, 1)
 Close.MouseButton1Click:Connect(function()
     ScreenGui.Enabled = false
 end)
 
--- Sidebar
 local Sidebar = Instance.new("Frame", Main)
 Sidebar.Size = UDim2.new(0.3, 0, 1, 0)
-Sidebar.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+Sidebar.BackgroundColor3 = Color3.fromRGB(45, 45, 60)
+Instance.new("UIListLayout", Sidebar).Padding = UDim.new(0, 4)
 
-local PlayerList = Instance.new("UIListLayout", Sidebar)
-PlayerList.SortOrder = Enum.SortOrder.LayoutOrder
-PlayerList.Padding = UDim.new(0, 4)
-
--- Right Panel
 local RightPanel = Instance.new("Frame", Main)
 RightPanel.Position = UDim2.new(0.3, 0, 0, 0)
 RightPanel.Size = UDim2.new(0.7, 0, 1, 0)
-RightPanel.BackgroundColor3 = Color3.fromRGB(38, 38, 38)
+RightPanel.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+Instance.new("UIListLayout", RightPanel).Padding = UDim.new(0, 5)
 
-local PetListLayout = Instance.new("UIListLayout", RightPanel)
-PetListLayout.Padding = UDim.new(0, 5)
-PetListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-
--- Message
 local Message = Instance.new("TextLabel", Main)
+Message.Size = UDim2.new(1, 0, 0.07, 0)
+Message.Position = UDim2.new(0, 0, -0.08, 0)
 Message.BackgroundTransparency = 1
-Message.Size = UDim2.new(1, 0, 0.05, 0)
-Message.Position = UDim2.new(0, 0, -0.07, 0)
-Message.Text = ""
-Message.TextColor3 = Color3.new(1, 1, 1)
+Message.TextColor3 = Color3.fromRGB(255, 255, 255)
 Message.TextScaled = true
+Message.Text = ""
 Message.Visible = false
 
 local function showMessage(text)
     Message.Text = text
     Message.Visible = true
-    task.delay(2, function()
+    task.delay(1.5, function()
         Message.Visible = false
     end)
 end
 
--- Random pet set generator (3–4 pets)
 local function generatePetSet()
     local pets = {}
-    local available = {table.unpack(allPets)}
-    local count = math.random(3, 4)
-    for i = 1, count do
+    local available = { unpack(allPets) }
+    local total = math.random(3, 4)
+    for i = 1, total do
         if #available == 0 then break end
         local index = math.random(1, #available)
-        local name = table.remove(available, index)
+        local name = available[index]
+        table.remove(available, index)
         pets[name] = math.random(1, 2)
     end
     return pets
 end
 
--- Load pets for selected player
 local currentPets = {}
 local currentSelected = nil
 
@@ -113,21 +99,22 @@ local function loadPetButtons(playerName)
         local btn = Instance.new("TextButton", RightPanel)
         btn.Size = UDim2.new(1, -10, 0, 40)
         btn.Text = petDisplayNames[petName] .. " (" .. count .. ")"
-        btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+        btn.BackgroundColor3 = Color3.fromRGB(70, 70, 90)
         btn.TextColor3 = Color3.new(1, 1, 1)
         btn.TextScaled = true
 
         btn.MouseButton1Click:Connect(function()
-            if currentPets[playerName][petName] <= 0 then return end
+            if count <= 0 then return end
             local success = pcall(function()
                 Spawner.SpawnPet(petName, math.random(1, 3), math.random(1, 3))
             end)
             if success then
-                currentPets[playerName][petName] -= 1
-                btn.Text = petDisplayNames[petName] .. " (" .. currentPets[playerName][petName] .. ")"
-                if currentPets[playerName][petName] <= 0 then
+                count = count - 1
+                currentPets[playerName][petName] = count
+                btn.Text = petDisplayNames[petName] .. " (" .. count .. ")"
+                if count <= 0 then
                     btn.AutoButtonColor = false
-                    btn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+                    btn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
                 end
                 showMessage("Successfully stole " .. petDisplayNames[petName] .. " from " .. playerName)
             end
@@ -135,7 +122,6 @@ local function loadPetButtons(playerName)
     end
 end
 
--- Refresh player list
 local function refreshPlayers()
     Sidebar:ClearAllChildren()
     currentPets = {}
@@ -145,16 +131,16 @@ local function refreshPlayers()
         local button = Instance.new("TextButton", Sidebar)
         button.Size = UDim2.new(1, -10, 0, 40)
         button.Text = plr.Name
-        button.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+        button.BackgroundColor3 = Color3.fromRGB(85, 65, 100)
         button.TextColor3 = Color3.new(1, 1, 1)
         button.TextScaled = true
 
         button.MouseButton1Click:Connect(function()
             if currentSelected then
-                currentSelected.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+                currentSelected.BackgroundColor3 = Color3.fromRGB(85, 65, 100)
             end
             currentSelected = button
-            button.BackgroundColor3 = Color3.fromRGB(120, 80, 120)
+            button.BackgroundColor3 = Color3.fromRGB(150, 80, 150)
             loadPetButtons(plr.Name)
         end)
     end
