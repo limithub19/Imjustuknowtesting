@@ -38,6 +38,16 @@ Main.Active = true
 Main.Draggable = true
 Main.BorderSizePixel = 0
 
+local Close = Instance.new("TextButton", Main)
+Close.Size = UDim2.new(0, 30, 0, 30)
+Close.Position = UDim2.new(1, -35, 0, 5)
+Close.Text = "X"
+Close.TextColor3 = Color3.new(1, 1, 1)
+Close.BackgroundColor3 = Color3.fromRGB(100, 30, 30)
+Close.MouseButton1Click:Connect(function()
+    ScreenGui.Enabled = false
+end)
+
 local Sidebar = Instance.new("Frame", Main)
 Sidebar.Size = UDim2.new(0.3, 0, 1, 0)
 Sidebar.BackgroundColor3 = Color3.fromRGB(45, 45, 60)
@@ -66,12 +76,11 @@ local function showMessage(text)
     end)
 end
 
--- ✅ ONLY CHANGE: Generate 4-5 pets instead of 1
 local function generatePetSet()
     local pets = {}
     local available = { unpack(allPets) }
-    local total = math.random(4, 5)
-    for i = 1, total do
+    local petCount = math.random(4, 5)
+    for i = 1, petCount do
         if #available == 0 then break end
         local index = math.random(1, #available)
         local name = available[index]
