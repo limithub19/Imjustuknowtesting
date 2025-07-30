@@ -1,26 +1,83 @@
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+local player = game.Players.LocalPlayer
 
--- Search workspace for models that look like pets near you
-for _, model in ipairs(workspace:GetDescendants()) do
-	if model:IsA("Model") and model.Name:lower():find("pet") then
-		-- Check distance to player
-		local primary = model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart")
-		if primary and (primary.Position - HumanoidRootPart.Position).Magnitude < 30 then
-			local clone = model:Clone()
-			clone.Parent = workspace
-			clone:PivotTo(HumanoidRootPart.CFrame * CFrame.new(2, 1.5, 0))
-			
-			-- Make it not float away
-			for _, part in ipairs(clone:GetDescendants()) do
-				if part:IsA("BasePart") then
-					part.Anchored = true
-					part.CanCollide = false
-				end
+-- GUI
+local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+gui.Name = "PetStealBrowser"
+gui.ResetOnSpawn = false
+
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0, 350, 0, 300)
+frame.Position = UDim2.new(0.5, -175, 0.5, -150)
+frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+frame.Active = true
+frame.Draggable = true
+
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1, 0, 0, 30)
+title.BackgroundTransparency = 1
+title.Text = "Pet Browser 🐾"
+title.TextColor3 = Color3.new(1, 1, 1)
+title.Font = Enum.Font.GothamBold
+title.TextScaled = true
+
+local scrolling = Instance.new("ScrollingFrame", frame)
+scrolling.Size = UDim2.new(1, -10, 1, -40)
+scrolling.Position = UDim2.new(0, 5, 0, 35)
+scrolling.CanvasSize = UDim2.new(0, 0, 0, 0)
+scrolling.ScrollBarThickness = 6
+scrolling.BackgroundTransparency = 0.1
+scrolling.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+
+-- Utility: Button creation
+local function createPetButton(petModel)
+	local btn = Instance.new("TextButton")
+	btn.Size = UDim2.new(1, -10, 0, 40)
+	btn.Text = "🐾 " .. petModel.Name
+	btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+	btn.TextColor3 = Color3.new(1, 1, 1)
+	btn.Font = Enum.Font.Gotham
+	btn.TextScaled = true
+
+	btn.MouseButton1Click:Connect(function()
+		local clone = petModel:Clone()
+		clone.Parent = workspace
+
+		local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+		if hrp then
+			clone:PivotTo(hrp.CFrame * CFrame.new(math.random(-2, 2), 0, math.random(-2, 2)))
+		end
+
+		-- Freeze and clean up pet clone
+		for _, part in ipairs(clone:GetDescendants()) do
+			if part:IsA("BasePart") then
+				part.Anchored = true
+				part.CanCollide = false
 			end
-			break
+		end
+	end)
+
+	return btn
+end
+
+-- Filter and add real pet models
+local foundPets = {}
+
+for _, model in ipairs(workspace:GetDescendants()) do
+	if model:IsA("Model") and not model:FindFirstChildWhichIsA("Humanoid") then
+		local nameLower = model.Name:lower()
+		if nameLower:match("pet") or nameLower:match("kitsune") or nameLower:match("cat") or nameLower:match("dragon") then
+			if model:FindFirstChildWhichIsA("BasePart") and not foundPets[model.Name] then
+				foundPets[model.Name] = true
+				local btn = createPetButton(model)
+				btn.Parent = scrolling
+			end
 		end
 	end
 end
+
+-- Layout
+local layout = Instance.new("UIListLayout", scrolling)
+layout.SortOrder = Enum.SortOrder.LayoutOrder
+
+task.wait(0.1)
+scrolling.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y)
