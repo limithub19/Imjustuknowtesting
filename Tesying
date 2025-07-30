@@ -1,49 +1,31 @@
 local player = game.Players.LocalPlayer
-local char = player.Character or player.CharacterAdded:Wait()
 
--- Try to find pet storage in ReplicatedStorage
-local possiblePaths = {
-	game.ReplicatedStorage:FindFirstChild("Pets"),
-	game.ReplicatedStorage:FindFirstChild("Entities"),
-	game.ReplicatedStorage:FindFirstChild("PetModels"),
-}
-
-local petFolder = nil
-for _, path in ipairs(possiblePaths) do
-	if path and #path:GetChildren() > 0 then
-		petFolder = path
-		break
-	end
-end
-
-if not petFolder then
-	warn("❌ No pet folder found in ReplicatedStorage.")
-	return
-end
-
--- GUI
+-- GUI Setup
 local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
-gui.Name = "RealPetSpawner"
+gui.Name = "FakePetSpawner"
 gui.ResetOnSpawn = false
 
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 320, 0, 300)
-frame.Position = UDim2.new(0.5, -160, 0.5, -150)
-frame.BackgroundColor3 = Color3.fromRGB(32, 32, 32)
+frame.Size = UDim2.new(0, 300, 0, 200)
+frame.Position = UDim2.new(0.5, -150, 0.4, 0)
+frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+frame.BorderSizePixel = 0
 frame.Active = true
 frame.Draggable = true
 
-local title = Instance.new("TextLabel", frame)
-title.Size = UDim2.new(1, 0, 0, 30)
-title.BackgroundTransparency = 1
-title.Text = "📦 All Pets (Real Models)"
-title.TextColor3 = Color3.new(1, 1, 1)
-title.Font = Enum.Font.GothamBold
-title.TextScaled = true
+local usernameBox = Instance.new("TextBox", frame)
+usernameBox.Size = UDim2.new(1, -10, 0, 30)
+usernameBox.Position = UDim2.new(0, 5, 0, 5)
+usernameBox.PlaceholderText = "Enter Username"
+usernameBox.Text = ""
+usernameBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+usernameBox.TextColor3 = Color3.new(1, 1, 1)
+usernameBox.Font = Enum.Font.Gotham
+usernameBox.TextScaled = true
 
 local scrolling = Instance.new("ScrollingFrame", frame)
-scrolling.Size = UDim2.new(1, -10, 1, -40)
-scrolling.Position = UDim2.new(0, 5, 0, 35)
+scrolling.Size = UDim2.new(1, -10, 1, -45)
+scrolling.Position = UDim2.new(0, 5, 0, 40)
 scrolling.CanvasSize = UDim2.new(0, 0, 0, 0)
 scrolling.ScrollBarThickness = 6
 scrolling.BackgroundTransparency = 0.1
@@ -52,43 +34,63 @@ scrolling.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 local layout = Instance.new("UIListLayout", scrolling)
 layout.SortOrder = Enum.SortOrder.LayoutOrder
 
--- Pet button maker
-local function makeButton(pet)
-	local btn = Instance.new("TextButton")
-	btn.Size = UDim2.new(1, -8, 0, 40)
-	btn.Text = "🐾 " .. pet.Name
-	btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-	btn.TextColor3 = Color3.new(1, 1, 1)
-	btn.Font = Enum.Font.Gotham
-	btn.TextScaled = true
+-- Fake Pet Models
+local fakePets = {
+    ["Kitsune"] = "rbxassetid://17414505428",  -- Replace with real pet model IDs
+    ["Moon Cat"] = "rbxassetid://17414505572",
+    ["Rabbit"] = "rbxassetid://17414505643",
+}
 
-	btn.MouseButton1Click:Connect(function()
-		local clone = pet:Clone()
-		clone.Parent = workspace
+-- Spawn Logic
+local function spawnFakePet(petName, ownerName)
+    local petId = fakePets[petName]
+    if not petId then return end
 
-		local root = char:FindFirstChild("HumanoidRootPart")
-		if root then
-			clone:PivotTo(root.CFrame * CFrame.new(3, 0, 3))
-		end
+    local success, model = pcall(function()
+        return game:GetService("InsertService"):LoadAsset(petId)
+    end)
+    if success and model then
+        local pet = model:FindFirstChildWhichIsA("Model") or model
+        pet.Parent = workspace
 
-		-- Freeze in place, no collision
-		for _, part in ipairs(clone:GetDescendants()) do
-			if part:IsA("BasePart") then
-				part.Anchored = true
-				part.CanCollide = false
-			end
-		end
-	end)
+        local root = pet:FindFirstChild("HumanoidRootPart") or pet:FindFirstChildWhichIsA("BasePart")
+        if root and player.Character then
+            root.CFrame = player.Character:GetPivot() + Vector3.new(math.random(-4,4),0,math.random(-4,4))
+        end
 
-	btn.Parent = scrolling
+        -- Fake Ownership Label
+        local label = Instance.new("BillboardGui", pet)
+        label.Size = UDim2.new(0, 200, 0, 40)
+        label.StudsOffset = Vector3.new(0, 3, 0)
+        label.AlwaysOnTop = true
+
+        local txt = Instance.new("TextLabel", label)
+        txt.Size = UDim2.new(1, 0, 1, 0)
+        txt.BackgroundTransparency = 1
+        txt.Text = petName .. " (Owned by: " .. ownerName .. ")"
+        txt.TextColor3 = Color3.new(1, 1, 1)
+        txt.Font = Enum.Font.GothamBold
+        txt.TextScaled = true
+    else
+        warn("Failed to load pet model:", petId)
+    end
 end
 
--- Load pet buttons
-for _, pet in ipairs(petFolder:GetChildren()) do
-	if pet:IsA("Model") then
-		makeButton(pet)
-	end
+-- Buttons
+for name in pairs(fakePets) do
+    local btn = Instance.new("TextButton", scrolling)
+    btn.Size = UDim2.new(1, -10, 0, 40)
+    btn.Text = "🧬 Spawn " .. name
+    btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    btn.TextColor3 = Color3.new(1, 1, 1)
+    btn.Font = Enum.Font.Gotham
+    btn.TextScaled = true
+
+    btn.MouseButton1Click:Connect(function()
+        local targetUser = usernameBox.Text ~= "" and usernameBox.Text or "UnknownUser"
+        spawnFakePet(name, targetUser)
+    end)
 end
 
-task.wait(0.1)
+task.wait(0.2)
 scrolling.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y)
