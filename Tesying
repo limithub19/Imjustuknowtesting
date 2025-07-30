@@ -1,73 +1,86 @@
 local player = game.Players.LocalPlayer
+local toolbar = player:WaitForChild("PlayerGui"):FindFirstChild("Toolbar") or Instance.new("ScreenGui", player.PlayerGui)
+toolbar.Name = "Toolbar"
 
--- GUI
-local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
-gui.Name = "PetStealBrowser"
-gui.ResetOnSpawn = false
+-- Add button to toolbar
+local stealButton = Instance.new("TextButton", toolbar)
+stealButton.Size = UDim2.new(0, 120, 0, 40)
+stealButton.Position = UDim2.new(0, 10, 1, -50)
+stealButton.BackgroundColor3 = Color3.fromRGB(45, 100, 45)
+stealButton.Text = "🛑 Steal Pet"
+stealButton.TextColor3 = Color3.new(1, 1, 1)
+stealButton.Font = Enum.Font.GothamBold
+stealButton.TextScaled = true
 
-local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 350, 0, 300)
-frame.Position = UDim2.new(0.5, -175, 0.5, -150)
-frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-frame.Active = true
-frame.Draggable = true
+-- GUI frame
+local gui = Instance.new("Frame", toolbar)
+gui.Size = UDim2.new(0, 250, 0, 200)
+gui.Position = UDim2.new(0, 10, 0.5, -100)
+gui.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+gui.Visible = false
 
-local title = Instance.new("TextLabel", frame)
-title.Size = UDim2.new(1, 0, 0, 30)
-title.BackgroundTransparency = 1
-title.Text = "Pet Browser 💎 (Visual Only)"
-title.TextColor3 = Color3.new(1, 1, 1)
-title.Font = Enum.Font.GothamBold
-title.TextScaled = true
+local usernameBox = Instance.new("TextBox", gui)
+usernameBox.Size = UDim2.new(1, -10, 0, 30)
+usernameBox.Position = UDim2.new(0, 5, 0, 5)
+usernameBox.PlaceholderText = "Enter username"
+usernameBox.Font = Enum.Font.Gotham
+usernameBox.TextColor3 = Color3.new(1, 1, 1)
+usernameBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+usernameBox.TextScaled = true
 
-local scrolling = Instance.new("ScrollingFrame", frame)
-scrolling.Size = UDim2.new(1, -10, 1, -40)
-scrolling.Position = UDim2.new(0, 5, 0, 35)
-scrolling.CanvasSize = UDim2.new(0, 0, 0, 0)
-scrolling.ScrollBarThickness = 6
-scrolling.BackgroundTransparency = 0.1
-scrolling.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+local petList = Instance.new("ScrollingFrame", gui)
+petList.Size = UDim2.new(1, -10, 1, -45)
+petList.Position = UDim2.new(0, 5, 0, 40)
+petList.ScrollBarThickness = 6
+petList.CanvasSize = UDim2.new(0, 0, 0, 0)
+petList.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 
--- Utility
-local function createPetButton(petModel)
-	local btn = Instance.new("TextButton")
-	btn.Size = UDim2.new(1, -10, 0, 40)
-	btn.Text = "🐾 " .. petModel.Name .. " from Player_" .. math.random(100, 999)
-	btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-	btn.TextColor3 = Color3.new(1, 1, 1)
-	btn.Font = Enum.Font.Gotham
-	btn.TextScaled = true
-
-	btn.MouseButton1Click:Connect(function()
-		local clone = petModel:Clone()
-		clone.Parent = workspace
-
-		local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-		if hrp then
-			clone:MoveTo(hrp.Position + Vector3.new(math.random(-3, 3), 0, math.random(-3, 3)))
-		end
-	end)
-
-	return btn
-end
-
--- Search pets
-local petFolderNames = {"Pets", "Pet", "Entities", "Plot", "Gardens"}
-local foundPets = {}
-
-for _, obj in ipairs(workspace:GetDescendants()) do
-	if obj:IsA("Model") and not obj:FindFirstChildWhichIsA("Humanoid") and obj.Name:lower():match("cat") or obj.Name:lower():match("kitsune") or obj.Name:lower():match("pet") then
-		if not foundPets[obj.Name] then
-			foundPets[obj.Name] = true
-			local btn = createPetButton(obj)
-			btn.Parent = scrolling
-		end
-	end
-end
-
--- Layout
-local layout = Instance.new("UIListLayout", scrolling)
+local layout = Instance.new("UIListLayout", petList)
 layout.SortOrder = Enum.SortOrder.LayoutOrder
 
-task.wait(0.1)
-scrolling.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y)
+-- Show GUI
+stealButton.MouseButton1Click:Connect(function()
+	gui.Visible = not gui.Visible
+end)
+
+-- Clone pets when username is entered
+usernameBox.FocusLost:Connect(function()
+	local user = usernameBox.Text
+	local plot = workspace:FindFirstChild("Plots") and workspace.Plots:FindFirstChild(user)
+	if not plot then
+		usernameBox.Text = "❌ Not Found"
+		return
+	end
+
+	-- Clear previous
+	for _, child in ipairs(petList:GetChildren()) do
+		if child:IsA("TextButton") then child:Destroy() end
+	end
+
+	for _, item in ipairs(plot:GetDescendants()) do
+		if item:IsA("Model") and item.Name:lower():find("pet") then
+			local btn = Instance.new("TextButton")
+			btn.Size = UDim2.new(1, -10, 0, 35)
+			btn.Text = "🐾 Clone " .. item.Name
+			btn.TextColor3 = Color3.new(1, 1, 1)
+			btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+			btn.Font = Enum.Font.Gotham
+			btn.TextScaled = true
+
+			btn.MouseButton1Click:Connect(function()
+				local clone = item:Clone()
+				clone.Parent = workspace
+
+				local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+				if hrp then
+					clone:MoveTo(hrp.Position + Vector3.new(math.random(-4, 4), 0, math.random(-4, 4)))
+				end
+			end)
+
+			btn.Parent = petList
+		end
+	end
+
+	task.wait(0.1)
+	petList.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y)
+end)
