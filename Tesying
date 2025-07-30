@@ -1,49 +1,29 @@
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-local GuiService = game:GetService("StarterGui")
 
--- Create a simple UI
-local screenGui = Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui"))
-screenGui.Name = "StealPetUI"
-screenGui.ResetOnSpawn = false
+-- 🔧 CHANGE THIS to the real username of the player you want to steal pet from:
+local targetUsername = "PutUsernameHere"
 
-local inputBox = Instance.new("TextBox", screenGui)
-inputBox.Size = UDim2.new(0, 200, 0, 40)
-inputBox.Position = UDim2.new(0.5, -100, 0, 20)
-inputBox.PlaceholderText = "Target username"
-inputBox.TextScaled = true
-inputBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-inputBox.TextColor3 = Color3.new(1, 1, 1)
-inputBox.Font = Enum.Font.Gotham
-Instance.new("UICorner", inputBox).CornerRadius = UDim.new(0, 8)
-
-local stealBtn = Instance.new("TextButton", screenGui)
-stealBtn.Size = UDim2.new(0, 200, 0, 40)
-stealBtn.Position = UDim2.new(0.5, -100, 0, 70)
-stealBtn.Text = "🔓 Steal Pet"
-stealBtn.TextScaled = true
-stealBtn.BackgroundColor3 = Color3.fromRGB(80, 120, 60)
-stealBtn.TextColor3 = Color3.new(1, 1, 1)
-stealBtn.Font = Enum.Font.GothamBold
-Instance.new("UICorner", stealBtn).CornerRadius = UDim.new(0, 8)
-
--- Steal the pet when button is clicked
-stealBtn.MouseButton1Click:Connect(function()
-	local targetName = inputBox.Text
-	local plots = workspace:FindFirstChild("Plots")
-	if not plots then
-		inputBox.Text = "❌ No Plots Folder"
-		return
+-- Find the plot owned by that username
+local function findPlotByUsername(username)
+	local plotsFolder = workspace:FindFirstChild("Plots")
+	if not plotsFolder then
+		warn("❌ No Plots folder found.")
+		return nil
 	end
 
-	local plot = plots:FindFirstChild(targetName)
-	if not plot then
-		inputBox.Text = "❌ Not found"
-		return
+	for _, plot in ipairs(plotsFolder:GetChildren()) do
+		local owner = plot:FindFirstChild("Owner") or plot:FindFirstChild("owner")
+		if owner and owner:IsA("StringValue") and owner.Value == username then
+			return plot
+		end
 	end
+	return nil
+end
 
-	-- Look for real pet model
+-- Clone first found pet from that plot
+local function stealPetFromPlot(plot)
 	for _, pet in ipairs(plot:GetDescendants()) do
 		if pet:IsA("Model") and pet.Name:lower():find("pet") then
 			local cloned = pet:Clone()
@@ -58,7 +38,19 @@ stealBtn.MouseButton1Click:Connect(function()
 					part.CanCollide = false
 				end
 			end
-			break
+			return true
 		end
 	end
-end)
+	return false
+end
+
+-- Main
+local plot = findPlotByUsername(targetUsername)
+if not plot then
+	warn("❌ Could not find plot owned by: " .. targetUsername)
+else
+	local success = stealPetFromPlot(plot)
+	if not success then
+		warn("❌ No pets found in plot!")
+	end
+end
