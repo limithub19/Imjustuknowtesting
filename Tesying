@@ -1,79 +1,105 @@
 local player = game.Players.LocalPlayer
+local char = player.Character or player.CharacterAdded:Wait()
 local toolbar = player:WaitForChild("PlayerGui"):FindFirstChild("Toolbar") or Instance.new("ScreenGui", player.PlayerGui)
 toolbar.Name = "Toolbar"
 
--- Add button to toolbar
-local stealButton = Instance.new("TextButton", toolbar)
-stealButton.Size = UDim2.new(0, 120, 0, 40)
-stealButton.Position = UDim2.new(0, 10, 1, -50)
-stealButton.BackgroundColor3 = Color3.fromRGB(45, 100, 45)
-stealButton.Text = "🛑 Steal Pet"
-stealButton.TextColor3 = Color3.new(1, 1, 1)
-stealButton.Font = Enum.Font.GothamBold
-stealButton.TextScaled = true
+-- Create main open button (styled)
+local stealBtn = Instance.new("TextButton", toolbar)
+stealBtn.Size = UDim2.new(0, 140, 0, 38)
+stealBtn.Position = UDim2.new(0, 15, 1, -55)
+stealBtn.BackgroundColor3 = Color3.fromRGB(35, 125, 80)
+stealBtn.Text = "🔓 Steal Visual Pet"
+stealBtn.TextColor3 = Color3.new(1, 1, 1)
+stealBtn.Font = Enum.Font.FredokaOne
+stealBtn.TextScaled = true
+stealBtn.AutoButtonColor = true
+stealBtn.BorderSizePixel = 0
+stealBtn.ClipsDescendants = true
+stealBtn.ZIndex = 2
+Instance.new("UICorner", stealBtn).CornerRadius = UDim.new(0, 8)
 
--- GUI frame
+-- Floating panel UI
 local gui = Instance.new("Frame", toolbar)
-gui.Size = UDim2.new(0, 250, 0, 200)
-gui.Position = UDim2.new(0, 10, 0.5, -100)
-gui.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+gui.Size = UDim2.new(0, 260, 0, 200)
+gui.Position = UDim2.new(0, 15, 0.5, -100)
+gui.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 gui.Visible = false
+gui.BorderSizePixel = 0
+gui.ZIndex = 2
+Instance.new("UICorner", gui).CornerRadius = UDim.new(0, 12)
 
-local usernameBox = Instance.new("TextBox", gui)
-usernameBox.Size = UDim2.new(1, -10, 0, 30)
-usernameBox.Position = UDim2.new(0, 5, 0, 5)
-usernameBox.PlaceholderText = "Enter username"
-usernameBox.Font = Enum.Font.Gotham
-usernameBox.TextColor3 = Color3.new(1, 1, 1)
-usernameBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-usernameBox.TextScaled = true
+-- Username box
+local nameBox = Instance.new("TextBox", gui)
+nameBox.Size = UDim2.new(1, -20, 0, 32)
+nameBox.Position = UDim2.new(0, 10, 0, 10)
+nameBox.PlaceholderText = "Enter player's real username"
+nameBox.Font = Enum.Font.Gotham
+nameBox.TextColor3 = Color3.new(1, 1, 1)
+nameBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+nameBox.TextScaled = true
+nameBox.ClearTextOnFocus = false
+Instance.new("UICorner", nameBox).CornerRadius = UDim.new(0, 6)
 
+-- Pet list container
 local petList = Instance.new("ScrollingFrame", gui)
-petList.Size = UDim2.new(1, -10, 1, -45)
-petList.Position = UDim2.new(0, 5, 0, 40)
-petList.ScrollBarThickness = 6
+petList.Size = UDim2.new(1, -20, 1, -52)
+petList.Position = UDim2.new(0, 10, 0, 48)
 petList.CanvasSize = UDim2.new(0, 0, 0, 0)
-petList.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+petList.ScrollBarThickness = 4
+petList.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+petList.BorderSizePixel = 0
+Instance.new("UICorner", petList).CornerRadius = UDim.new(0, 6)
 
 local layout = Instance.new("UIListLayout", petList)
 layout.SortOrder = Enum.SortOrder.LayoutOrder
+layout.Padding = UDim.new(0, 5)
 
--- Show GUI
-stealButton.MouseButton1Click:Connect(function()
+-- Button toggle UI
+stealBtn.MouseButton1Click:Connect(function()
 	gui.Visible = not gui.Visible
 end)
 
--- Clone pets when username is entered
-usernameBox.FocusLost:Connect(function()
-	local user = usernameBox.Text
-	local plot = workspace:FindFirstChild("Plots") and workspace.Plots:FindFirstChild(user)
+-- Populate pet buttons
+nameBox.FocusLost:Connect(function()
+	local targetName = nameBox.Text
+	local plots = workspace:FindFirstChild("Plots")
+	local plot = plots and plots:FindFirstChild(targetName)
+
+	for _, v in ipairs(petList:GetChildren()) do
+		if v:IsA("TextButton") then v:Destroy() end
+	end
+
 	if not plot then
-		usernameBox.Text = "❌ Not Found"
+		nameBox.Text = "❌ Player not found"
 		return
 	end
 
-	-- Clear previous
-	for _, child in ipairs(petList:GetChildren()) do
-		if child:IsA("TextButton") then child:Destroy() end
-	end
-
-	for _, item in ipairs(plot:GetDescendants()) do
-		if item:IsA("Model") and item.Name:lower():find("pet") then
+	for _, pet in ipairs(plot:GetDescendants()) do
+		if pet:IsA("Model") and pet.Name:lower():find("pet") then
 			local btn = Instance.new("TextButton")
-			btn.Size = UDim2.new(1, -10, 0, 35)
-			btn.Text = "🐾 Clone " .. item.Name
+			btn.Size = UDim2.new(1, 0, 0, 35)
+			btn.Text = "➕ " .. pet.Name
 			btn.TextColor3 = Color3.new(1, 1, 1)
-			btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-			btn.Font = Enum.Font.Gotham
+			btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+			btn.Font = Enum.Font.GothamBold
 			btn.TextScaled = true
+			btn.BorderSizePixel = 0
+			btn.ZIndex = 2
+			Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
 
 			btn.MouseButton1Click:Connect(function()
-				local clone = item:Clone()
-				clone.Parent = workspace
+				local cloned = pet:Clone()
+				cloned.Parent = workspace
 
-				local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-				if hrp then
-					clone:MoveTo(hrp.Position + Vector3.new(math.random(-4, 4), 0, math.random(-4, 4)))
+				local root = char:FindFirstChild("HumanoidRootPart")
+				if root then
+					cloned:PivotTo(root.CFrame * CFrame.new(2, 2, 0)) -- Float at side
+				end
+
+				for _, p in ipairs(cloned:GetDescendants()) do
+					if p:IsA("BasePart") then
+						p.Anchored = true
+					end
 				end
 			end)
 
