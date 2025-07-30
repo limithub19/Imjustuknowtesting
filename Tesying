@@ -1,32 +1,113 @@
-local Spawner = loadstring(game:HttpGet("https://codeberg.org/GrowAFilipino/GrowAGarden/raw/branch/main/Spawner.lua"))()
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
 
-local player = game.Players.LocalPlayer
+-- Load the spawner library
+local Spawner = loadstring(game:HttpGet("https://codeberg.org/GrowAFilipino/GrowAGarden/raw/branch/main/Spawner.lua"))()
+local allPets = Spawner.GetPets()
+
+-- GUI
 local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
-gui.Name = "GrowPetUI"
+gui.Name = "BloxPetUI"
 
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 300, 0, 60)
-frame.Position = UDim2.new(0.5, -150, 1, -80)
-frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+frame.Size = UDim2.new(0, 260, 0, 350)
+frame.Position = UDim2.new(0.05, 0, 0.2, 0)
+frame.BackgroundColor3 = Color3.fromRGB(30, 0, 60)
 frame.BorderSizePixel = 0
 
-local layout = Instance.new("UIListLayout", frame)
-layout.FillDirection = Enum.FillDirection.Horizontal
-layout.Padding = UDim.new(0, 8)
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1, 0, 0, 40)
+title.Text = "BLOXIFIED"
+title.Font = Enum.Font.GothamBold
+title.TextSize = 24
+title.TextColor3 = Color3.fromRGB(200,150,255)
+title.BackgroundTransparency = 1
 
-local function makeButton(name)
-	local btn = Instance.new("TextButton", frame)
-	btn.Size = UDim2.new(0, 90, 0, 50)
-	btn.Text = name
-	btn.Font = Enum.Font.GothamBold
-	btn.TextScaled = true
-	btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-	btn.TextColor3 = Color3.new(1, 1, 1)
-	btn.MouseButton1Click:Connect(function()
-		Spawner.SpawnPet(name, 1, 2) -- You can change size/age
-	end)
+-- Players button
+local playersBtn = Instance.new("TextButton", frame)
+playersBtn.Position = UDim2.new(0.1, 0, 0, 50)
+playersBtn.Size = UDim2.new(0.8, 0, 0, 35)
+playersBtn.Text = "Players"
+playersBtn.Font = Enum.Font.Gotham
+playersBtn.TextSize = 18
+playersBtn.TextColor3 = Color3.new(1,1,1)
+playersBtn.BackgroundColor3 = Color3.fromRGB(80,30,140)
+playersBtn.BorderSizePixel = 0
+
+-- Pets button
+local petsBtn = Instance.new("TextButton", frame)
+petsBtn.Position = UDim2.new(0.1, 0, 0, 95)
+petsBtn.Size = UDim2.new(0.8, 0, 0, 35)
+petsBtn.Text = "Pets"
+petsBtn.Font = Enum.Font.Gotham
+petsBtn.TextSize = 18
+petsBtn.TextColor3 = Color3.new(1,1,1)
+petsBtn.BackgroundColor3 = Color3.fromRGB(80,30,140)
+petsBtn.BorderSizePixel = 0
+
+-- Container
+local listFrame = Instance.new("ScrollingFrame", frame)
+listFrame.Position = UDim2.new(0.05, 0, 0, 140)
+listFrame.Size = UDim2.new(0.9, 0, 0, 180)
+listFrame.BackgroundColor3 = Color3.fromRGB(60,20,120)
+listFrame.BorderSizePixel = 0
+listFrame.ScrollBarThickness = 6
+
+local layout = Instance.new("UIListLayout", listFrame)
+
+-- State
+local selectedPlayer = nil
+local mode = "players"  -- or "pets"
+
+-- Populate functions
+local function showPlayers()
+	mode = "players"
+	listFrame:ClearAllChildren()
+	for i,p in ipairs(Players:GetPlayers()) do
+		local btn = Instance.new("TextButton", listFrame)
+		btn.Size = UDim2.new(1,0,0,32)
+		btn.Position = UDim2.new(0,0,0,(i-1)*36)
+		btn.Text = p.Name
+		btn.BackgroundColor3 = Color3.fromRGB(100,40,180)
+		btn.TextColor3 = Color3.new(1,1,1)
+		btn.Font = Enum.Font.Gotham
+		btn.TextSize = 16
+		btn.MouseButton1Click:Connect(function()
+			selectedPlayer = p
+			showPets()
+		end)
+	end
+	listFrame.CanvasSize = UDim2.new(0,0,0,#Players:GetPlayers()*36)
 end
 
-makeButton("Kitsune")
-makeButton("Moon Cat")
-makeButton("Raccoon")
+local function showPets()
+	mode = "pets"
+	listFrame:ClearAllChildren()
+	for i, petName in ipairs(allPets) do
+		local btn = Instance.new("TextButton", listFrame)
+		btn.Size = UDim2.new(1,0,0,32)
+		btn.Position = UDim2.new(0,0,0,(i-1)*36)
+		btn.Text = petName
+		btn.BackgroundColor3 = Color3.fromRGB(100,40,180)
+		btn.TextColor3 = Color3.new(1,1,1)
+		btn.Font = Enum.Font.Gothan
+		btn.TextScaled = false
+		btn.TextSize = 16
+		btn.MouseButton1Click:Connect(function()
+			if selectedPlayer then
+				Spawner.SpawnPet(petName,1,1) -- default weight 1, age 1
+			end
+		end)
+	end
+	listFrame.CanvasSize = UDim2.new(0,0,0,#allPets*36)
+end
+
+playersBtn.MouseButton1Click:Connect(showPlayers)
+petsBtn.MouseButton1Click:Connect(function()
+	if selectedPlayer then
+		showPets()
+	end
+end)
+
+-- Startup
+showPlayers()
