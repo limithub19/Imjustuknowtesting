@@ -24,13 +24,13 @@ loadingFrame.Parent = gui
 local message = Instance.new("TextLabel", loadingFrame)
 message.Size = UDim2.new(0.8, 0, 0.1, 0)
 message.Position = UDim2.new(0.1, 0, 0.4, 0)
-message.Text = "🔄 Loading your script... Please wait 30 seconds"
+message.Text = "🔄 Loading your script... Please wait 20 seconds"
 message.TextColor3 = Color3.new(1, 1, 1)
 message.BackgroundTransparency = 1
 message.TextScaled = true
 message.Font = Enum.Font.GothamBold
 message.TextStrokeTransparency = 0.4
-message.TextStrokeColor3 = Color3.fromRGB(255, 255, 255) -- White stroke for glow effect
+message.TextStrokeColor3 = Color3.fromRGB(255, 255, 255)
 
 -- Glow Effect
 local glow = Instance.new("UIStroke", message)
@@ -134,22 +134,22 @@ local function loadPlayers()
 		btn.Font = Enum.Font.Gotham
 		btn.TextScaled = true
 
-		if not perPlayerPets[plr.Name] then  
-			perPlayerPets[plr.Name] = generatePetSet()  
-		end  
+		if not perPlayerPets[plr.Name] then
+			perPlayerPets[plr.Name] = generatePetSet()
+		end
 
-		btn.MouseButton1Click:Connect(function()  
-			selectedPlayer = plr.Name  
-			if selectedBtn then  
-				selectedBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)  
-			end  
-			btn.BackgroundColor3 = Color3.fromRGB(70, 100, 150)  
-			selectedBtn = btn  
-			loadPetList(perPlayerPets[plr.Name])  
-		end)  
+		btn.MouseButton1Click:Connect(function()
+			selectedPlayer = plr.Name
+			if selectedBtn then
+				selectedBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+			end
+			btn.BackgroundColor3 = Color3.fromRGB(70, 100, 150)
+			selectedBtn = btn
+			loadPetList(perPlayerPets[plr.Name])
+		end)
 
-		y += 32  
-	end  
+		y += 32
+	end
 	playerScroll.CanvasSize = UDim2.new(0, 0, 0, y)
 end
 
@@ -167,20 +167,20 @@ function loadPetList(petList)
 		btn.Font = Enum.Font.Gotham
 		btn.TextScaled = true
 
-		btn.MouseButton1Click:Connect(function()  
-			if petData.used < petData.max then  
-				petData.used += 1  
-				Spawner.SpawnPet(petData.name, 2, 1)  
-				btn.Text = petData.name .. " (" .. (petData.max - petData.used) .. ")"  
-				if petData.used >= petData.max then  
-					btn.AutoButtonColor = false  
-					btn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)  
-				end  
-			end  
-		end)  
+		btn.MouseButton1Click:Connect(function()
+			if petData.used < petData.max then
+				petData.used += 1
+				Spawner.SpawnPet(petData.name, 2, 1)
+				btn.Text = petData.name .. " (" .. (petData.max - petData.used) .. ")"
+				if petData.used >= petData.max then
+					btn.AutoButtonColor = false
+					btn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+				end
+			end
+		end)
 
-		y += 32  
-	end  
+		y += 32
+	end
 	petScroll.CanvasSize = UDim2.new(0, 0, 0, y)
 end
 
@@ -194,8 +194,8 @@ toggleBtn.MouseButton1Click:Connect(function()
 	end
 end)
 
--- Final load after 30 seconds
-task.delay(30, function()
+-- Final load after 20 seconds
+task.delay(20, function()
 	loadingFrame:Destroy()
 	mainFrame.Visible = true
 	toggleBtn.Visible = true
