@@ -20,10 +20,9 @@ loadingFrame.BackgroundColor3 = Color3.new(0, 0, 0)
 loadingFrame.ZIndex = 10
 loadingFrame.Parent = gui
 
--- Loading Message
 local message = Instance.new("TextLabel", loadingFrame)
 message.Size = UDim2.new(0.8, 0, 0.1, 0)
-message.Position = UDim2.new(0.1, 0, 0.4, 0)
+message.Position = UDim2.new(0.1, 0, 0.45, 0)
 message.Text = "🔄 Loading your script... Please wait 20 seconds"
 message.TextColor3 = Color3.new(1, 1, 1)
 message.BackgroundTransparency = 1
@@ -32,7 +31,6 @@ message.Font = Enum.Font.GothamBold
 message.TextStrokeTransparency = 0.4
 message.TextStrokeColor3 = Color3.fromRGB(255, 255, 255)
 
--- Glow Effect
 local glow = Instance.new("UIStroke", message)
 glow.Thickness = 2
 glow.Color = Color3.fromRGB(255, 255, 255)
@@ -105,7 +103,6 @@ local selectedBtn
 local selectedPlayer = nil
 local perPlayerPets = {}
 
--- Generate pet sets
 local function generatePetSet()
 	local count = math.random(2, 4)
 	local selected = {}
@@ -120,7 +117,6 @@ local function generatePetSet()
 	return selected
 end
 
--- Load players
 local function loadPlayers()
 	playerScroll:ClearAllChildren()
 	local y = 0
@@ -153,7 +149,6 @@ local function loadPlayers()
 	playerScroll.CanvasSize = UDim2.new(0, 0, 0, y)
 end
 
--- Load pets
 function loadPetList(petList)
 	petScroll:ClearAllChildren()
 	local y = 0
@@ -184,7 +179,6 @@ function loadPetList(petList)
 	petScroll.CanvasSize = UDim2.new(0, 0, 0, y)
 end
 
--- Toggle GUI
 toggleBtn.MouseButton1Click:Connect(function()
 	mainFrame.Visible = not mainFrame.Visible
 	if mainFrame.Visible then
@@ -194,7 +188,6 @@ toggleBtn.MouseButton1Click:Connect(function()
 	end
 end)
 
--- Final load after 20 seconds
 task.delay(20, function()
 	loadingFrame:Destroy()
 	mainFrame.Visible = true
