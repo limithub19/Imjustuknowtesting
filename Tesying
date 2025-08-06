@@ -1,307 +1,288 @@
+-- SERVICES
+local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
-local CoreGui = game:GetService("CoreGui")
+local player = Players.LocalPlayer
 
--- Main ScreenGui
-local screenGui = Instance.new("ScreenGui", CoreGui)
-screenGui.Name = "LuluBypassLoader"
-screenGui.IgnoreGuiInset = true
+-- GUI SETUP
+local screenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+screenGui.Name = "LuluUniversalHub"
 screenGui.ResetOnSpawn = false
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
--- Fullscreen background
-local bg = Instance.new("Frame", screenGui)
-bg.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
-bg.Size = UDim2.new(1, 0, 1, 0)
+-- LOADING SCREEN (FULLSCREEN)
+local loadingFrame = Instance.new("Frame", screenGui)
+loadingFrame.Size = UDim2.new(1, 0, 1, 0)
+loadingFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+loadingFrame.ZIndex = 20
 
--- Main loading frame
-local mainFrame = Instance.new("Frame", bg)
-mainFrame.Size = UDim2.new(0, 320, 0, 120)
-mainFrame.Position = UDim2.new(0.5, -160, 0.5, -60)
-mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0, 12)
+local loadingText = Instance.new("TextLabel", loadingFrame)
+loadingText.Size = UDim2.new(1, 0, 1, 0)
+loadingText.Text = "Bypassing Anti-Cheat..."
+loadingText.Font = Enum.Font.FredokaOne
+loadingText.TextSize = 32
+loadingText.TextColor3 = Color3.fromRGB(255, 255, 255)
+loadingText.BackgroundTransparency = 1
 
--- Shadow
-local shadow = Instance.new("ImageLabel", mainFrame)
-shadow.AnchorPoint = Vector2.new(0.5, 0.5)
-shadow.Position = UDim2.new(0.5, 0, 0.5, 0)
-shadow.Size = UDim2.new(1, 40, 1, 40)
-shadow.BackgroundTransparency = 1
-shadow.Image = "rbxassetid://1316045217"
-shadow.ImageTransparency = 0.6
-shadow.ZIndex = 0
+wait(3) -- simulate anti-cheat bypass
+loadingFrame:Destroy()
 
--- Text label (centered fix)
-local label = Instance.new("TextLabel", mainFrame)
-label.Size = UDim2.new(1, -20, 1, -60)
-label.Position = UDim2.new(0, 10, 0, 10)
-label.BackgroundTransparency = 1
-label.Text = "Bypassing Anti\nCheat..."
-label.TextColor3 = Color3.fromRGB(255, 255, 255)
-label.TextScaled = true
-label.Font = Enum.Font.GothamBold
-label.TextWrapped = true
-label.TextYAlignment = Enum.TextYAlignment.Center
-label.TextXAlignment = Enum.TextXAlignment.Center
+-- MAIN UI FRAME
+local mainFrame = Instance.new("Frame", screenGui)
+mainFrame.Size = UDim2.new(0, 300, 0, 220)
+mainFrame.Position = UDim2.new(0.5, -150, 0.5, -110)
+mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+mainFrame.Visible = false
+mainFrame.Active = true
+mainFrame.Draggable = true
+Instance.new("UICorner", mainFrame)
 
--- Progress bar background
-local progressBG = Instance.new("Frame", mainFrame)
-progressBG.Size = UDim2.new(1, -40, 0, 20)
-progressBG.Position = UDim2.new(0, 20, 0.7, 0)
-progressBG.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-progressBG.BorderSizePixel = 0
-Instance.new("UICorner", progressBG).CornerRadius = UDim.new(0, 6)
+-- TITLE
+local title = Instance.new("TextLabel", mainFrame)
+title.Text = "Lulu Hub"
+title.Font = Enum.Font.FredokaOne
+title.TextSize = 24
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.BackgroundTransparency = 1
+title.Size = UDim2.new(1, 0, 0, 40)
 
--- Progress fill
-local progressBar = Instance.new("Frame", progressBG)
-progressBar.Size = UDim2.new(0, 0, 1, 0)
-progressBar.BackgroundColor3 = Color3.fromRGB(0, 255, 90)
-progressBar.BorderSizePixel = 0
-Instance.new("UICorner", progressBar).CornerRadius = UDim.new(0, 6)
+-- BUTTON TEMPLATE
+local function createButton(name, posY)
+	local button = Instance.new("TextButton", mainFrame)
+	button.Text = name
+	button.Font = Enum.Font.FredokaOne
+	button.TextSize = 16
+	button.TextColor3 = Color3.fromRGB(255, 255, 255)
+	button.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+	button.Size = UDim2.new(0.8, 0, 0, 36)
+	button.Position = UDim2.new(0.1, 0, 0, posY)
+	Instance.new("UICorner", button)
+	return button
+end
 
--- Animate progress bar
-local tween = TweenService:Create(progressBar, TweenInfo.new(6, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
-	Size = UDim2.new(1, 0, 1, 0)
-})
-tween:Play()
+-- Buttons
+local dupeBtn = createButton("🔁 Lulu Pet Dupe", 50)
+local petBtn = createButton("🐾 Lulu Hub Pet", 100)
+local tradeBtn = createButton("💸 Lulu Hub Trade", 150)
 
--- When done: success message + load Lulu Hub UI
-tween.Completed:Connect(function()
-	label.Text = "Bypass Successful!"
-	label.TextColor3 = Color3.fromRGB(0, 255, 90)
+-- LOGO BUTTON (TOGGLE MAIN UI)
+local logoBtn = Instance.new("TextButton", screenGui)
+logoBtn.Size = UDim2.new(0, 40, 0, 40)
+logoBtn.Position = UDim2.new(0, 10, 0, 10)
+logoBtn.Text = "🐾"
+logoBtn.Font = Enum.Font.FredokaOne
+logoBtn.TextSize = 24
+logoBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+logoBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+Instance.new("UICorner", logoBtn)
 
-	wait(2)
+logoBtn.MouseButton1Click:Connect(function()
+	mainFrame.Visible = not mainFrame.Visible
+end)
 
-	-- Fade out loading screen
-	TweenService:Create(bg, TweenInfo.new(0.6), {BackgroundTransparency = 1}):Play()
-	TweenService:Create(mainFrame, TweenInfo.new(0.6), {BackgroundTransparency = 1}):Play()
-	TweenService:Create(label, TweenInfo.new(0.6), {TextTransparency = 1}):Play()
-	TweenService:Create(progressBar, TweenInfo.new(0.6), {BackgroundTransparency = 1}):Play()
-	TweenService:Create(progressBG, TweenInfo.new(0.6), {BackgroundTransparency = 1}):Play()
+-- LOAD BUTTON SCRIPTS
 
-	wait(0.6)
-	screenGui:Destroy()
-
-	-- Load Lulu Hub UI
-	local luluGui = Instance.new("ScreenGui", CoreGui)
-	luluGui.Name = "LuluHubUI"
-	luluGui.ResetOnSpawn = false
-	luluGui.IgnoreGuiInset = true
-
-	local hubFrame = Instance.new("Frame", luluGui)
-	hubFrame.Size = UDim2.new(0, 420, 0, 300)
-	hubFrame.Position = UDim2.new(0.5, -210, 0.5, -150)
-	hubFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-	hubFrame.BorderSizePixel = 0
-	Instance.new("UICorner", hubFrame).CornerRadius = UDim.new(0, 12)
-
-	-- Drag support
-	local drag = Instance.new("LocalScript", hubFrame)
-	drag.Source = [[
-		local UIS = game:GetService("UserInputService")
-		local frame = script.Parent
-		local dragging, dragInput, dragStart, startPos
-
-		local function update(input)
-			local delta = input.Position - dragStart
-			frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X,
-									   startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-		end
-
-		frame.InputBegan:Connect(function(input)
-			if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-				dragging = true
-				dragStart = input.Position
-				startPos = frame.Position
-				input.Changed:Connect(function()
-					if input.UserInputState == Enum.UserInputState.End then
-						dragging = false
-					end
-				end)
-			end
-		end)
-
-		frame.InputChanged:Connect(function(input)
-			if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-				dragInput = input
-			end
-		end)
-
-		UIS.InputChanged:Connect(function(input)
-			if input == dragInput and dragging then
-				update(input)
-			end
-		end)
-	]]
-
-	-- Lulu Hub Logo
-	local logo = Instance.new("TextLabel", hubFrame)
-	logo.Size = UDim2.new(1, 0, 0, 50)
-	logo.BackgroundTransparency = 1
-	logo.Text = "🌙 Lulu Hub"
-	logo.TextColor3 = Color3.fromRGB(0, 255, 127)
-	logo.Font = Enum.Font.GothamBlack
-	logo.TextScaled = true
-
-	-- Close button
-	local close = Instance.new("TextButton", hubFrame)
-	close.Size = UDim2.new(0, 30, 0, 30)
-	close.Position = UDim2.new(1, -35, 0, 5)
-	close.Text = "✕"
-	close.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-	close.TextColor3 = Color3.fromRGB(255, 255, 255)
-	close.Font = Enum.Font.GothamBold
-	close.TextScaled = true
-	Instance.new("UICorner", close).CornerRadius = UDim.new(0, 8)
-	close.MouseButton1Click:Connect(function()
-		luluGui:Destroy()
-	end)
-
-	-- Placeholder message
-	local label = Instance.new("TextLabel", hubFrame)
-	label.Size = UDim2.new(1, -20, 1, -60)
-	label.Position = UDim2.new(0, 10, 0, 50)
-	label.BackgroundTransparency = 1
-	label.Text = "Welcome to Lulu Hub!"
-	label.TextColor3 = Color3.fromRGB(255, 255, 255)
-	label.Font = Enum.Font.Gotham
-	label.TextScaled = true
-	label.TextWrapped = true
-
-	-- Now Load Galaxy UI
+dupeBtn.MouseButton1Click:Connect(function()
 	local Players = game:GetService("Players")
-	local LocalPlayer = Players.LocalPlayer
-	
-	-- Load Galaxy Sound
-	local sound = Instance.new("Sound", game.SoundService)
-	sound.SoundId = "rbxassetid://9118823101"
-	sound.Volume = 1
-	sound.Name = "GalaxySFX"
-	
-	-- Galaxy UI Setup
-	local gui = Instance.new("ScreenGui", game.CoreGui)
-	gui.Name = "LuluGalaxySelector"
-	gui.ResetOnSpawn = false
-	
-	-- Main Selector Frame
-	local frame = Instance.new("Frame", gui)
-	frame.Size = UDim2.new(0, 180, 0, 100)
-	frame.Position = UDim2.new(0, 40, 0.5, -50)
-	frame.BackgroundColor3 = Color3.fromRGB(22, 22, 30)
-	frame.BorderSizePixel = 0
+	local TweenService = game:GetService("TweenService")
+	local player = Players.LocalPlayer
+	local character = player.Character or player.CharacterAdded:Wait()
+
+	-- Screen GUI Setup
+	local screenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+	screenGui.Name = "KuniPetDuplicator"
+	screenGui.ResetOnSpawn = false
+	screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+	-- Main Frame
+	local frame = Instance.new("Frame", screenGui)
+	frame.Size = UDim2.new(0, 300, 0, 160)
+	frame.Position = UDim2.new(0.5, -150, 0.5, -80)
+	frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 	frame.Active = true
 	frame.Draggable = true
-	frame.Visible = true
-	
-	local uicorner = Instance.new("UICorner", frame)
-	uicorner.CornerRadius = UDim.new(0, 12)
-	
-	local shadow = Instance.new("UIStroke", frame)
-	shadow.Color = Color3.fromRGB(72, 95, 180)
-	shadow.Thickness = 1.4
-	
-	-- Title Label
+	frame.Name = "PetDuplicateFrame"
+	Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
+
+	-- Title
 	local title = Instance.new("TextLabel", frame)
-	title.Text = "🌌 Lulu Galaxy"
-	title.Size = UDim2.new(1, 0, 0, 28)
+	title.Text = "Pet Duplicator"
+	title.Font = Enum.Font.FredokaOne
+	title.TextSize = 20
+	title.TextColor3 = Color3.fromRGB(255, 255, 255)
 	title.BackgroundTransparency = 1
-	title.TextColor3 = Color3.fromRGB(200, 200, 255)
-	title.Font = Enum.Font.GothamSemibold
-	title.TextSize = 16
-	
-	-- UI Buttons
-	local function createButton(name, text, order)
-		local button = Instance.new("TextButton", frame)
-		button.Name = name
-		button.Text = text
-		button.Size = UDim2.new(1, -20, 0, 28)
-		button.Position = UDim2.new(0, 10, 0, 32 + (order * 32))
-		button.BackgroundColor3 = Color3.fromRGB(34, 34, 50)
-		button.TextColor3 = Color3.fromRGB(255, 255, 255)
-		button.Font = Enum.Font.Gotham
-		button.TextSize = 14
-	
-		local corner = Instance.new("UICorner", button)
-		corner.CornerRadius = UDim.new(0, 8)
-	
-		return button
+	title.Size = UDim2.new(1, 0, 0, 30)
+	title.Position = UDim2.new(0, 0, 0, 5)
+
+	-- Close Button
+	local closeButton = Instance.new("TextButton", frame)
+	closeButton.Text = "X"
+	closeButton.Font = Enum.Font.FredokaOne
+	closeButton.TextSize = 18
+	closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+	closeButton.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
+	closeButton.Size = UDim2.new(0, 28, 0, 28)
+	closeButton.Position = UDim2.new(1, -34, 0, 6)
+	Instance.new("UICorner", closeButton)
+
+	closeButton.MouseButton1Click:Connect(function()
+		frame.Visible = false
+	end)
+
+	-- Equipped Pet Label
+	local petInfo = Instance.new("TextLabel", frame)
+	petInfo.Text = "Equipped Pet: [None]"
+	petInfo.Font = Enum.Font.FredokaOne
+	petInfo.TextSize = 16
+	petInfo.TextColor3 = Color3.fromRGB(255, 255, 160)
+	petInfo.BackgroundTransparency = 1
+	petInfo.Position = UDim2.new(0, 12, 0, 40)
+	petInfo.Size = UDim2.new(1, -24, 0, 24)
+	petInfo.TextXAlignment = Enum.TextXAlignment.Left
+
+	-- Duplicate Pet Button
+	local dupeButton = Instance.new("TextButton", frame)
+	dupeButton.Text = "Duplicate Pet"
+	dupeButton.Font = Enum.Font.FredokaOne
+	dupeButton.TextSize = 16
+	dupeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+	dupeButton.BackgroundColor3 = Color3.fromRGB(160, 100, 255)
+	dupeButton.Size = UDim2.new(0, 220, 0, 36)
+	dupeButton.Position = UDim2.new(0.5, -110, 0, 76)
+	Instance.new("UICorner", dupeButton)
+
+	local dupeGrad = Instance.new("UIGradient", dupeButton)
+	dupeGrad.Color = ColorSequence.new{
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(160, 100, 255))
+	}
+	dupeGrad.Rotation = 90
+
+	-- Footer Label
+	local footer = Instance.new("TextLabel", frame)
+	footer.Text = "Made by Kuni"
+	footer.Font = Enum.Font.FredokaOne
+	footer.TextSize = 13
+	footer.TextColor3 = Color3.fromRGB(180, 180, 180)
+	footer.BackgroundTransparency = 1
+	footer.Size = UDim2.new(1, 0, 0, 20)
+	footer.Position = UDim2.new(0, 0, 1, -20)
+
+	local function getEquippedPetTool()
+		character = player.Character or player.CharacterAdded:Wait()
+		for _, tool in pairs(character:GetChildren()) do
+			if tool:IsA("Tool") and tool:FindFirstChild("Handle") then
+				return tool
+			end
+		end
+		return nil
 	end
-	
-	-- Lulu Pet Button
-	local petBtn = createButton("PetBtn", "🐾 Lulu Hub Pet", 0)
-	petBtn.MouseButton1Click:Connect(function()
+
+	local function updateGUI()
+		local pet = getEquippedPetTool()
+		if pet then
+			petInfo.Text = "Equipped Pet: " .. pet.Name
+		else
+			petInfo.Text = "Equipped Pet: [None]"
+		end
+	end
+
+	local function createLoadingBar()
+		local loadingFrame = Instance.new("Frame", screenGui)
+		loadingFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+		loadingFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+		loadingFrame.Size = UDim2.new(0, 260, 0, 70)
+		loadingFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+		loadingFrame.ZIndex = 20
+		Instance.new("UICorner", loadingFrame)
+
+		local label = Instance.new("TextLabel", loadingFrame)
+		label.Text = "Duplicating pet, please wait..."
+		label.Font = Enum.Font.FredokaOne
+		label.TextSize = 16
+		label.TextColor3 = Color3.fromRGB(255, 255, 255)
+		label.BackgroundTransparency = 1
+		label.Size = UDim2.new(1, 0, 0, 30)
+		label.Position = UDim2.new(0, 0, 0, 6)
+		label.ZIndex = 21
+
+		local barBG = Instance.new("Frame", loadingFrame)
+		barBG.Position = UDim2.new(0.05, 0, 0.65, 0)
+		barBG.Size = UDim2.new(0.9, 0, 0.2, 0)
+		barBG.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+		barBG.ZIndex = 21
+		Instance.new("UICorner", barBG)
+
+		local bar = Instance.new("Frame", barBG)
+		bar.BackgroundColor3 = Color3.fromRGB(130, 100, 255)
+		bar.Size = UDim2.new(0, 0, 1, 0)
+		bar.ZIndex = 22
+		Instance.new("UICorner", bar)
+
+		local sound = Instance.new("Sound", loadingFrame)
+		sound.SoundId = "rbxassetid://9118823106"
+		sound.Volume = 1
 		sound:Play()
-		loadstring(game:HttpGet("https://raw.githubusercontent.com/limithub19/Imjustuknowtesting/refs/heads/main/Tesying"))()
+
+		return loadingFrame, bar, sound
+	end
+
+	local function showErrorMessage(text)
+		local errorLabel = Instance.new("TextLabel", screenGui)
+		errorLabel.AnchorPoint = Vector2.new(0.5, 0.5)
+		errorLabel.Position = UDim2.new(0.5, 0, 0.45, 0)
+		errorLabel.Size = UDim2.new(0, 250, 0, 40)
+		errorLabel.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
+		errorLabel.Text = text
+		errorLabel.Font = Enum.Font.FredokaOne
+		errorLabel.TextSize = 16
+		errorLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+		errorLabel.ZIndex = 30
+		Instance.new("UICorner", errorLabel)
+
+		task.delay(2.5, function()
+			errorLabel:Destroy()
+		end)
+	end
+
+	dupeButton.MouseButton1Click:Connect(function()
+		local equipped = getEquippedPetTool()
+		if not equipped then
+			showErrorMessage("No Equipped Pet Detected")
+			return
+		end
+
+		local loader, bar, sound = createLoadingBar()
+		local duration = 8
+		local tweenInfo = TweenInfo.new(duration, Enum.EasingStyle.Linear)
+		local tween = TweenService:Create(bar, tweenInfo, {Size = UDim2.new(1, 0, 1, 0)})
+		tween:Play()
+
+		task.wait(duration)
+
+		loader:Destroy()
+		if sound then sound:Destroy() end
+
+		local clone = equipped:Clone()
+		clone.Name = equipped.Name
+		clone.Parent = player.Backpack
+		dupeButton.Text = "Pet Duplicated!"
+
+		task.wait(2)
+		dupeButton.Text = "Duplicate Pet"
 	end)
-	
-	-- Lulu Trade Button
-	local tradeBtn = createButton("TradeBtn", "💸 Lulu Hub Trade", 1)
-	tradeBtn.MouseButton1Click:Connect(function()
-		sound:Play()
-		loadstring(game:HttpGet("https://pastebin.com/raw/9JYtHjsX"))()
-	end)
-	
-	-- Toggle Shortcut: RightShift
-	local UIS = game:GetService("UserInputService")
-	UIS.InputBegan:Connect(function(input, gpe)
-		if gpe then return end
-		if input.KeyCode == Enum.KeyCode.RightShift then
-			frame.Visible = not frame.Visible
+
+	task.spawn(function()
+		while true do
+			updateGUI()
+			task.wait(1)
 		end
 	end)
-	
-	-- 🌌 Logo Button (Draggable + Toggle)
-	local logoBtn = Instance.new("TextButton", gui)
-	logoBtn.Size = UDim2.new(0, 50, 0, 50)
-	logoBtn.Position = UDim2.new(0, 10, 1, -60)
-	logoBtn.Text = "🌌"
-	logoBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
-	logoBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-	logoBtn.Font = Enum.Font.GothamBold
-	logoBtn.TextScaled = true
-	logoBtn.Visible = true
-	logoBtn.Active = true
-	logoBtn.AutoButtonColor = true
-	
-	local logoCorner = Instance.new("UICorner", logoBtn)
-	logoCorner.CornerRadius = UDim.new(1, 0)
-	
-	-- Draggable Logic for logo
-	local dragging = false
-	local dragInput, dragStart, startPos
-	
-	logoBtn.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-			dragging = true
-			dragStart = input.Position
-			startPos = logoBtn.Position
-	
-			input.Changed:Connect(function()
-				if input.UserInputState == Enum.UserInputState.End then
-					dragging = false
-				end
-			end)
-		end
-	end)
-	
-	logoBtn.InputChanged:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-			dragInput = input
-		end
-	end)
-	
-	game:GetService("UserInputService").InputChanged:Connect(function(input)
-		if input == dragInput and dragging then
-			local delta = input.Position - dragStart
-			logoBtn.Position = UDim2.new(
-				startPos.X.Scale,
-				startPos.X.Offset + delta.X,
-				startPos.Y.Scale,
-				startPos.Y.Offset + delta.Y
-			)
-		end
-	end)
-	
-	logoBtn.MouseButton1Click:Connect(function()
-		frame.Visible = not frame.Visible
-	end)
+end)
+
+petBtn.MouseButton1Click:Connect(function()
+	loadstring(game:HttpGet("https://raw.githubusercontent.com/KrnlScripts2/Source/main/Tesying"))()
+end)
+
+tradeBtn.MouseButton1Click:Connect(function()
+	loadstring(game:HttpGet("https://pastebin.com/raw/9JYtHjsX"))()
 end)
